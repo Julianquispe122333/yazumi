@@ -3,10 +3,8 @@ package com.example.apiyazumy.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
-
 @Entity
-@Table(name = "codigos_validacion")
+@Table(name = "configuracion")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,15 +13,10 @@ import java.time.LocalDateTime;
 public class CodigoValidacion {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_codigo")
-    private Integer idCodigo;
+    @Column(name = "id")
+    private Integer id;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String codigo;
+    @Column(name = "codigo_validacion", nullable = false, length = 50)
+    private String codigoValidacion;
 
-    private Boolean usado;
-
-    @Column(name = "fecha_creacion")
-    private LocalDateTime fechaCreacion;
 }

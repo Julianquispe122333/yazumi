@@ -35,7 +35,7 @@ public class Producto {
 
     private String imagen;
 
-    private Boolean activo;
+
 
     @Column(name = "fecha_actualizacion")
     private LocalDateTime fechaActualizacion;

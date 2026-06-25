@@ -26,7 +26,6 @@ public class HistorialEstado {
     @JoinColumn(name = "id_estado")
     private EstadoPedido estadoPedido;
 
-    private String comentario;
 
     private LocalDateTime fecha;
 }

@@ -28,7 +28,6 @@ public class Usuario {
 
     @Column(name = "nombre_negocio")
     private String nombreNegocio;
-
     @Column(name = "password_hash")
     private String passwordHash;
 
