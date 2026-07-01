@@ -125,7 +125,6 @@ id_usuario INT NOT NULL,
 id_estado INT NOT NULL DEFAULT 1,
 fecha_pedido DATETIME DEFAULT CURRENT_TIMESTAMP,
 direccion_entrega VARCHAR(255) NOT NULL,
-observaciones TEXT,
 total DECIMAL(10,2) NOT NULL DEFAULT 0,
 
 CONSTRAINT fk_pedido_usuario

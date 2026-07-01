@@ -1,12 +1,14 @@
 package com.example.apiyazumy.business.impl;
 
 import com.example.apiyazumy.business.PedidoBusiness;
+import com.example.apiyazumy.dto.response.EstadoPedidoResponseDTO;
 import com.example.apiyazumy.dto.response.PedidoResponseDTO;
 import com.example.apiyazumy.entity.DetallePedido;
 import com.example.apiyazumy.entity.Pedido;
 import com.example.apiyazumy.entity.Usuario;
 import com.example.apiyazumy.exception.UsuarioNoEncontradoException;
 import com.example.apiyazumy.repository.DetallePedidoRepository;
+import com.example.apiyazumy.repository.EstadoPedidoRepository;
 import com.example.apiyazumy.repository.PedidoRepository;
 import com.example.apiyazumy.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,7 @@ public class PedidoBusinessImpl implements PedidoBusiness {
     private final PedidoRepository pedidoRepository;
     private final DetallePedidoRepository detallePedidoRepository;
     private final UsuarioRepository usuarioRepository;
+    private final EstadoPedidoRepository estadoPedidoRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -34,29 +37,51 @@ public class PedidoBusinessImpl implements PedidoBusiness {
         List<Pedido> pedidos = pedidoRepository.findByUsuarioIdUsuarioOrderByFechaPedidoDesc(idUsuario);
 
         // 3. Mapear pedidos y sus detalles a DTOs de respuesta
-        return pedidos.stream().map(pedido -> {
-            List<DetallePedido> detalles = detallePedidoRepository.findByPedidoIdPedido(pedido.getIdPedido());
-            
-            List<PedidoResponseDTO.DetallePedidoResponseDTO> detallesDTO = detalles.stream().map(dp -> 
-                PedidoResponseDTO.DetallePedidoResponseDTO.builder()
-                        .idProducto(dp.getProducto().getIdProducto())
-                        .nombreProducto(dp.getProducto().getNombre())
-                        .cantidad(dp.getCantidad())
-                        .precioUnitario(dp.getPrecioUnitario())
-                        .subtotal(dp.getSubtotal())
-                        .build()
-            ).toList();
+        return pedidos.stream().map(pedido -> mapearPedidoADTO(pedido, usuario.getIdUsuario())).toList();
+    }
 
-            return PedidoResponseDTO.builder()
-                    .idPedido(pedido.getIdPedido())
-                    .idUsuario(usuario.getIdUsuario())
-                    .estado(pedido.getEstadoPedido() != null ? pedido.getEstadoPedido().getNombre() : null)
-                    .fechaPedido(pedido.getFechaPedido())
-                    .direccionEntrega(pedido.getDireccionEntrega())
-                    .observaciones(pedido.getObservaciones())
-                    .detalle(detallesDTO)
-                    .total(pedido.getTotal())
-                    .build();
-        }).toList();
+    @Override
+    @Transactional(readOnly = true)
+    public PedidoResponseDTO obtenerPedidoPorId(Integer idPedido) {
+        Pedido pedido = pedidoRepository.findById(idPedido)
+                .orElseThrow(() -> new RuntimeException("PEDIDO_NO_ENCONTRADO"));
+        return mapearPedidoADTO(pedido, pedido.getUsuario().getIdUsuario());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<EstadoPedidoResponseDTO> listarEstados() {
+        return estadoPedidoRepository.findAll().stream()
+                .map(e -> EstadoPedidoResponseDTO.builder()
+                        .idEstado(e.getIdEstado())
+                        .nombre(e.getNombre())
+                        .build())
+                .toList();
+    }
+
+    // ---- Helper privado ----
+    private PedidoResponseDTO mapearPedidoADTO(Pedido pedido, Integer idUsuario) {
+        List<DetallePedido> detalles = detallePedidoRepository.findByPedidoIdPedido(pedido.getIdPedido());
+
+        List<PedidoResponseDTO.DetallePedidoResponseDTO> detallesDTO = detalles.stream().map(dp ->
+            PedidoResponseDTO.DetallePedidoResponseDTO.builder()
+                    .idProducto(dp.getProducto().getIdProducto())
+                    .nombreProducto(dp.getProducto().getNombre())
+                    .cantidad(dp.getCantidad())
+                    .precioUnitario(dp.getPrecioUnitario())
+                    .subtotal(dp.getSubtotal())
+                    .build()
+        ).toList();
+
+        return PedidoResponseDTO.builder()
+                .idPedido(pedido.getIdPedido())
+                .idUsuario(idUsuario)
+                .estado(pedido.getEstadoPedido() != null ? pedido.getEstadoPedido().getNombre() : null)
+                .fechaPedido(pedido.getFechaPedido())
+                .direccionEntrega(pedido.getDireccionEntrega())
+                .observaciones(pedido.getObservaciones())
+                .detalle(detallesDTO)
+                .total(pedido.getTotal())
+                .build();
     }
 }
