@@ -1,5 +1,6 @@
 package com.example.apiyazumy.entity;
 
+// Conexión frontend-backend
 import jakarta.persistence.*;
 import lombok.*;
 
