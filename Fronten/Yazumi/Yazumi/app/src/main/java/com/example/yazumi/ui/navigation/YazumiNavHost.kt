@@ -208,7 +208,16 @@ fun YazumiNavHost(container: AppContainer) {
             }
             composable(Routes.CART) {
                 val cartViewModel: CartViewModel = viewModel(factory = factory)
-                CartScreen(viewModel = cartViewModel)
+                CartScreen(
+                    viewModel = cartViewModel,
+                    onNavigateToCatalog = {
+                        navController.navigate(Routes.CATALOG) {
+                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
+                )
             }
             composable(Routes.ORDERS) {
                 val ordersViewModel: OrderHistoryViewModel = viewModel(factory = factory)

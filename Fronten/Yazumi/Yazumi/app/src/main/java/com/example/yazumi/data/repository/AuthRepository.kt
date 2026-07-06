@@ -25,7 +25,7 @@ class AuthRepository(
                 Result.failure(Exception(response.message ?: "Error al iniciar sesión"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.parseErrorMessage()))
         }
     }
 
@@ -57,8 +57,23 @@ class AuthRepository(
                 Result.failure(Exception(response.message ?: "Error al registrarse"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.parseErrorMessage()))
         }
+    }
+
+    private fun Throwable.parseErrorMessage(): String {
+        if (this is retrofit2.HttpException) {
+            try {
+                val errorBody = this.response()?.errorBody()?.string()
+                if (!errorBody.isNullOrBlank()) {
+                    val apiResponse = com.google.gson.Gson().fromJson(errorBody, com.example.yazumi.data.model.ApiResponse::class.java)
+                    return apiResponse.message ?: "Error del servidor"
+                }
+            } catch (ex: Exception) {
+                // ignorar
+            }
+        }
+        return this.message ?: "Error de red"
     }
 
     suspend fun logout() {

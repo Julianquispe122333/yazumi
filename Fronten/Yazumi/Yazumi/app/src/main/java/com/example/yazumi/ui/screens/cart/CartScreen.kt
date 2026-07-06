@@ -41,7 +41,10 @@ import com.example.yazumi.ui.util.formatSoles
 import com.example.yazumi.ui.viewmodel.CartViewModel
 
 @Composable
-fun CartScreen(viewModel: CartViewModel) {
+fun CartScreen(
+    viewModel: CartViewModel,
+    onNavigateToCatalog: () -> Unit,
+) {
     val uiState by viewModel.uiState.collectAsState()
     val user by viewModel.currentUser.collectAsState()
 
@@ -50,7 +53,10 @@ fun CartScreen(viewModel: CartViewModel) {
         uiState.orderConfirmed -> OrderConfirmation(
             pedidoId = uiState.confirmedCompra?.idPedido ?: 0,
             total = uiState.confirmedCompra?.total ?: 0.0,
-            onDone = { viewModel.resetConfirmation() },
+            onDone = {
+                viewModel.resetConfirmation()
+                onNavigateToCatalog()
+            },
         )
         uiState.error != null && uiState.carrito.items.isEmpty() -> {
             Column(

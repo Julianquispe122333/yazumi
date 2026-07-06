@@ -17,6 +17,9 @@ class OrderRepository(
     suspend fun getPedidos(): Result<List<Pedido>> {
         return try {
             val uid = currentUserId()
+            if (uid == 0) {
+                return Result.success(emptyList())
+            }
             val response = api.getPedidosPorUsuario(uid)
             if (response.success && response.data != null) {
                 Result.success(response.data)
@@ -24,7 +27,7 @@ class OrderRepository(
                 Result.failure(Exception(response.message ?: "Error al cargar pedidos"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.parseErrorMessage()))
         }
     }
 
@@ -38,8 +41,23 @@ class OrderRepository(
                 Result.failure(Exception(response.message ?: "Error al obtener el pedido"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.parseErrorMessage()))
         }
+    }
+
+    private fun Throwable.parseErrorMessage(): String {
+        if (this is retrofit2.HttpException) {
+            try {
+                val errorBody = this.response()?.errorBody()?.string()
+                if (!errorBody.isNullOrBlank()) {
+                    val apiResponse = com.google.gson.Gson().fromJson(errorBody, com.example.yazumi.data.model.ApiResponse::class.java)
+                    return apiResponse.message ?: "Error del servidor"
+                }
+            } catch (ex: Exception) {
+                // ignorar
+            }
+        }
+        return this.message ?: "Error de red"
     }
 }
 

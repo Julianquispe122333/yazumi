@@ -34,8 +34,8 @@ public class ProductoBusinessImpl implements ProductoBusiness {
                 .stockEstado(p.getStock() != null && p.getStock() > 0 ? "DISPONIBLE" : "SIN STOCK")
                 .imagen(p.getImagen())
                 .activo(p.getActivo())
-                .unidadesPorPaquete(p.getUnidadesPorPaquete())
-                .precioSugerido(p.getPrecioSugerido())
+                .unidadesPorPaquete(p.getUnidadesPorPaquete() != null && p.getUnidadesPorPaquete() > 0 ? p.getUnidadesPorPaquete() : 12)
+                .precioSugerido(p.getPrecioSugerido() != null ? p.getPrecioSugerido() : java.math.BigDecimal.valueOf(1.50))
                 .build();
     }
 

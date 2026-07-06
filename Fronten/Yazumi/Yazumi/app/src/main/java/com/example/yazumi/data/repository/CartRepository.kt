@@ -21,6 +21,9 @@ class CartRepository(
     suspend fun getCarrito(): Result<Carrito> {
         return try {
             val uid = currentUserId()
+            if (uid == 0) {
+                return Result.success(Carrito(0, 0, emptyList()))
+            }
             val response = api.getCarrito(uid)
             if (response.success && response.data != null) {
                 Result.success(response.data)
@@ -28,7 +31,7 @@ class CartRepository(
                 Result.failure(Exception(response.message ?: "Error al cargar carrito"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.parseErrorMessage()))
         }
     }
 
@@ -36,6 +39,9 @@ class CartRepository(
     suspend fun agregarItem(idProducto: Int, cantidad: Int): Result<Carrito> {
         return try {
             val uid = currentUserId()
+            if (uid == 0) {
+                return Result.failure(Exception("Usuario no autenticado"))
+            }
             val response = api.agregarAlCarrito(AgregarCarritoRequest(uid, idProducto, cantidad))
             if (response.success && response.data != null) {
                 Result.success(response.data)
@@ -43,7 +49,7 @@ class CartRepository(
                 Result.failure(Exception(response.message ?: "Error al agregar producto"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.parseErrorMessage()))
         }
     }
 
@@ -51,6 +57,9 @@ class CartRepository(
     suspend fun updateItem(idProducto: Int, cantidad: Int): Result<Carrito> {
         return try {
             val uid = currentUserId()
+            if (uid == 0) {
+                return Result.failure(Exception("Usuario no autenticado"))
+            }
             if (cantidad <= 0) {
                 // Si cantidad es 0 o menor, eliminar el item
                 eliminarItem(idProducto)
@@ -63,7 +72,7 @@ class CartRepository(
                 }
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.parseErrorMessage()))
         }
     }
 
@@ -71,6 +80,9 @@ class CartRepository(
     suspend fun eliminarItem(idProducto: Int): Result<Carrito> {
         return try {
             val uid = currentUserId()
+            if (uid == 0) {
+                return Result.failure(Exception("Usuario no autenticado"))
+            }
             val response = api.eliminarDelCarrito(uid, idProducto)
             if (response.success && response.data != null) {
                 Result.success(response.data)
@@ -78,7 +90,7 @@ class CartRepository(
                 Result.failure(Exception(response.message ?: "Error al eliminar producto"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.parseErrorMessage()))
         }
     }
 
@@ -86,6 +98,9 @@ class CartRepository(
     suspend fun vaciarCarrito(): Result<Carrito> {
         return try {
             val uid = currentUserId()
+            if (uid == 0) {
+                return Result.failure(Exception("Usuario no autenticado"))
+            }
             val response = api.vaciarCarrito(uid)
             if (response.success && response.data != null) {
                 Result.success(response.data)
@@ -93,7 +108,7 @@ class CartRepository(
                 Result.failure(Exception(response.message ?: "Error al vaciar carrito"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.parseErrorMessage()))
         }
     }
 
@@ -101,6 +116,9 @@ class CartRepository(
     suspend fun comprar(direccionEntrega: String): Result<CompraResponse> {
         return try {
             val uid = currentUserId()
+            if (uid == 0) {
+                return Result.failure(Exception("Usuario no autenticado"))
+            }
             val response = api.comprar(uid, ComprarRequest(direccionEntrega))
             if (response.success && response.data != null) {
                 Result.success(response.data)
@@ -108,8 +126,23 @@ class CartRepository(
                 Result.failure(Exception(response.message ?: "Error al realizar la compra"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.parseErrorMessage()))
         }
+    }
+
+    private fun Throwable.parseErrorMessage(): String {
+        if (this is retrofit2.HttpException) {
+            try {
+                val errorBody = this.response()?.errorBody()?.string()
+                if (!errorBody.isNullOrBlank()) {
+                    val apiResponse = com.google.gson.Gson().fromJson(errorBody, com.example.yazumi.data.model.ApiResponse::class.java)
+                    return apiResponse.message ?: "Error del servidor"
+                }
+            } catch (ex: Exception) {
+                // ignorar
+            }
+        }
+        return this.message ?: "Error de red"
     }
 }
 
