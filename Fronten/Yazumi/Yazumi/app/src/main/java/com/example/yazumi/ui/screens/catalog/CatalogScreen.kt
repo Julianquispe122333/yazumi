@@ -44,7 +44,7 @@ fun CatalogScreen(
         uiState.error != null -> ErrorMessage(uiState.error!!)
         else -> Column(modifier = Modifier.fillMaxSize()) {
             Text(
-                text = "Catálogo de marcas",
+                text = "Categorías de productos",
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(16.dp),

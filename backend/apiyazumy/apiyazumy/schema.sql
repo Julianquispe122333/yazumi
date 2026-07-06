@@ -11,10 +11,10 @@ USE yazumi_app;
 -- ==========================================
 
 CREATE TABLE codigos_validacion (
-  id_codigo INT AUTO_INCREMENT PRIMARY KEY,
-  codigo VARCHAR(50) NOT NULL UNIQUE,
-  usado TINYINT(1) DEFAULT 0,
-  fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
+id_codigo INT AUTO_INCREMENT PRIMARY KEY,
+codigo VARCHAR(50) NOT NULL UNIQUE,
+usado TINYINT(1) DEFAULT 0,
+fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ==========================================
@@ -27,7 +27,7 @@ nombres VARCHAR(100) NOT NULL,
 telefono VARCHAR(15) NOT NULL UNIQUE,
 direccion VARCHAR(255) NOT NULL,
 nombre_negocio VARCHAR(150),
-password_hash VARCHAR(255),
+password_hash VARCHAR(255) NOT NULL,
 estado TINYINT(1) DEFAULT 1,
 fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
 
@@ -56,7 +56,7 @@ imagen VARCHAR(255),
 activo TINYINT(1) DEFAULT 1,
 unidades_por_paquete INT DEFAULT 1,
 precio_sugerido DECIMAL(10,2) DEFAULT 0.00,
-fecha_actualizacion DATETIME DEFAULT CURRENT_TIMESTAMP
+fecha_actualizacion DATETIME
 );
 
 -- ==========================================
@@ -73,7 +73,6 @@ CONSTRAINT fk_carrito_usuario
 FOREIGN KEY (id_usuario)
 REFERENCES usuarios(id_usuario)
 ON DELETE CASCADE
-
 );
 
 -- ==========================================
@@ -98,7 +97,6 @@ REFERENCES productos(id_producto),
 
 CONSTRAINT uk_carrito_producto
 UNIQUE(id_carrito, id_producto)
-
 );
 
 -- ==========================================
@@ -136,7 +134,6 @@ REFERENCES usuarios(id_usuario),
 CONSTRAINT fk_pedido_estado
 FOREIGN KEY (id_estado)
 REFERENCES estados_pedido(id_estado)
-
 );
 
 -- ==========================================
@@ -178,8 +175,8 @@ ON pedidos(id_usuario);
 -- DATOS DE PRUEBA
 -- ==========================================
 
-INSERT INTO codigos_validacion(codigo, usado)
-VALUES ('YAZUMI2026', 0);
+INSERT INTO codigos_validacion(codigo)
+VALUES ('YAZUMI2026');
 
 INSERT INTO usuarios (
 nombres,
@@ -215,7 +212,7 @@ VALUES
     'LAYS001',
     'Lays',
     'Caja Lays Clásicas',
-    '1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Papas Fritas Clásicas Lay''s\nFormato de Venta: Caja\nContenido por Unidad: 45g\nUnidades por Empaque Corrugado: 30 uds.',
+    'Caja conteniendo 30 unidades de Papas Fritas Clásicas Lay''s de 45g. Formato comercial listo para abastecer tu negocio.',
     'Caja de 30 un',
     36.00,
     50,
@@ -227,7 +224,7 @@ VALUES
     'LAYS002',
     'Lays',
     'Caja Lays Ondas Limón',
-    '1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Papas Fritas Lay''s Ondas sabor Limón\nFormato de Venta: Caja\nContenido por Unidad: 45g\nUnidades por Empaque Corrugado: 30 uds.',
+    'Caja conteniendo 30 unidades de Papas Fritas Lay''s Ondas sabor Limón de 45g. Ideal para surtir los estantes de tu tienda.',
     'Caja de 30 un',
     36.00,
     45,
@@ -239,7 +236,7 @@ VALUES
     'DORI001',
     'Doritos',
     'Caja Doritos Queso Mega',
-    '1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Tortillas de Maíz Doritos sabor Queso Mega\nFormato de Venta: Caja\nContenido por Unidad: 50g\nUnidades por Empaque Corrugado: 24 uds.',
+    'Caja conteniendo 24 unidades de Tortillas de Maíz Doritos sabor Queso Mega de 50g. Snacks salados de alta rotación.',
     'Caja de 24 un',
     36.00,
     40,
@@ -251,7 +248,7 @@ VALUES
     'CHEE001',
     'Cheetos',
     'Caja Cheetos Crunchy',
-    '1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Chizitos Horneados Cheetos Crunchy sabor Queso\nFormato de Venta: Caja\nContenido por Unidad: 40g\nUnidades por Empaque Corrugado: 30 uds.',
+    'Caja conteniendo 30 unidades de Chizitos Horneados Cheetos Crunchy sabor Queso de 40g. Ideal para la venta diaria en bodegas.',
     'Caja de 30 un',
     30.00,
     60,
@@ -263,7 +260,7 @@ VALUES
     'CHTR001',
     'Cheese Tris',
     'Cinta Cheese Tris Original',
-    '1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Extruidos de Maíz Cheese Tris Sabor Queso\nFormato de Venta: Cinta\nContenido por Unidad: 35g\nUnidades por Empaque Corrugado: 12 uds.',
+    'Tira/Cinta para colgar conteniendo 12 unidades de Cheese Tris sabor Queso de 35g. Maximiza espacio y visibilidad en tu local.',
     'Cinta de 12 un',
     12.00,
     80,
@@ -275,7 +272,7 @@ VALUES
     'CUAT001',
     'Cuates',
     'Cinta Cuates Picantes',
-    '1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Cacahuates Cuates Picantes\nFormato de Venta: Cinta\nContenido por Unidad: 40g\nUnidades por Empaque Corrugado: 12 uds.',
+    'Tira/Cinta para colgar conteniendo 12 unidades de Cacahuates Cuates Picantes de 40g. Producto listo para exhibir y vender.',
     'Cinta de 12 un',
     14.40,
     75,
@@ -287,7 +284,7 @@ VALUES
     'RUF001',
     'Ruffles',
     'Caja Ruffles Original',
-    '1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Papas Fritas Onduladas Ruffles Originales\nFormato de Venta: Caja\nContenido por Unidad: 45g\nUnidades por Empaque Corrugado: 24 uds.',
+    'Caja conteniendo 24 unidades de Papas Fritas Onduladas Ruffles de 45g. Formato ideal para minimarkets y tiendas.',
     'Caja de 24 un',
     31.20,
     35,

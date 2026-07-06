@@ -141,27 +141,27 @@ fun ProductDetailScreen(
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "INFORMACIÓN MAYORISTA",
+                            text = "DETALLE DE PRESENTACIÓN",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colorScheme.primary
                         )
                         androidx.compose.material3.HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                         Text(
-                            text = "Contenido: ${producto.presentacion ?: "N/A"} (${producto.unidadesPorPaquete} un.)",
+                            text = "Se vende por: ${if (producto.presentacion?.lowercase()?.contains("cinta") == true) "Cinta" else "Caja"}",
                             fontWeight = FontWeight.SemiBold
                         )
-                        Text(text = "Costo unitario mayorista: ${formatSoles(costoUnitario)}")
-                        Text(text = "Precio venta público sugerido: ${formatSoles(producto.precioSugerido)}")
                         Text(
-                            text = "Ganancia estimada: ${formatSoles(gananciaPaquete)} por empaque (${formatSoles(gananciaUnidad)} por unidad)",
-                            color = Color(0xFF10B981), // Verde éxito
-                            fontWeight = FontWeight.Bold
+                            text = "Unidades por empaque: ${producto.unidadesPorPaquete} unidades",
+                            style = MaterialTheme.typography.bodyLarge
                         )
-                        Text(text = "Stock disponible: ${producto.stock} empaques")
+                        Text(
+                            text = "Stock disponible: ${producto.stock} empaques",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                         producto.descripcion?.let {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(it, style = MaterialTheme.typography.bodyMedium)
