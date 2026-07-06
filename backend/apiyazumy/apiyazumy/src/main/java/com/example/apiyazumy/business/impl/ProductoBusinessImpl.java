@@ -34,6 +34,8 @@ public class ProductoBusinessImpl implements ProductoBusiness {
                 .stockEstado(p.getStock() != null && p.getStock() > 0 ? "DISPONIBLE" : "SIN STOCK")
                 .imagen(p.getImagen())
                 .activo(p.getActivo())
+                .unidadesPorPaquete(p.getUnidadesPorPaquete())
+                .precioSugerido(p.getPrecioSugerido())
                 .build();
     }
 

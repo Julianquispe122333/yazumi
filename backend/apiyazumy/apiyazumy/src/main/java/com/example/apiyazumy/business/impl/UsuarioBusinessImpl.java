@@ -26,11 +26,11 @@ public class UsuarioBusinessImpl implements UsuarioBusiness {
     public RegistroResponseDTO registrar(RegistroRequestDTO request) {
         // 1. Validar código en configuracion.
         com.example.apiyazumy.entity.CodigoValidacion cod = configuracionRepository.findByCodigoValidacion(request.getCodigoValidacion())
-                .orElseThrow(() -> new CodigoInvalidoException("CODIGO_INVALIDO"));
+                .orElseThrow(() -> new CodigoInvalidoException("El código de validación ingresado es incorrecto o no existe."));
 
         // 2. Verificar que teléfono no exista.
         if (usuarioRepository.existsByTelefono(request.getTelefono())) {
-            throw new TelefonoExistenteException("EL TELÉFONO YA ESTÁ REGISTRADO");
+            throw new TelefonoExistenteException("El número de teléfono ya se encuentra registrado.");
         }
 
         // 3. Crear usuario con password encriptado.

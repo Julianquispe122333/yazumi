@@ -21,11 +21,11 @@ public class AuthBusinessImpl implements AuthBusiness {
     public LoginResponseDTO login(LoginRequestDTO request) {
         // 1. Buscar usuario por telefono
         Usuario usuario = usuarioRepository.findByTelefono(request.getTelefono())
-                .orElseThrow(() -> new UsuarioNoEncontradoException("CLIENTE_NO_REGISTRADO"));
+                .orElseThrow(() -> new UsuarioNoEncontradoException("El número de teléfono no está registrado."));
 
         // 2. Validar password
         if (!passwordEncoder.matches(request.getPassword(), usuario.getPasswordHash())) {
-            throw new com.example.apiyazumy.exception.CredencialesInvalidasException("CREDenciales_INVALIDAS");
+            throw new com.example.apiyazumy.exception.CredencialesInvalidasException("La contraseña ingresada es incorrecta.");
         }
 
         // 3. Devolver acceso permitido

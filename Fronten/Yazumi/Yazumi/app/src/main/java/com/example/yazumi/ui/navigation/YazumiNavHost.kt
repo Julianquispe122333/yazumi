@@ -14,6 +14,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -60,6 +61,15 @@ fun YazumiNavHost(container: AppContainer) {
     }
     val authViewModel: AuthViewModel = viewModel(factory = factory)
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState(initial = false)
+
+    LaunchedEffect(isLoggedIn) {
+        if (!isLoggedIn) {
+            navController.navigate(Routes.LOGIN) {
+                popUpTo(0) { inclusive = true }
+            }
+        }
+    }
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
     val showBottomBar = isLoggedIn && currentRoute in bottomNavRoutes
@@ -156,9 +166,6 @@ fun YazumiNavHost(container: AppContainer) {
                     onCategoryClick = { navController.navigate(Routes.category(it)) },
                     onLogout = {
                         authViewModel.logout()
-                        navController.navigate(Routes.LOGIN) {
-                            popUpTo(0) { inclusive = true }
-                        }
                     },
                 )
             }

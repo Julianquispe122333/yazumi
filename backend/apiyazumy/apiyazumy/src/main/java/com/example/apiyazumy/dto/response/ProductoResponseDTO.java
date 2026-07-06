@@ -23,5 +23,7 @@ public class ProductoResponseDTO {
     private String stockEstado;   // "DISPONIBLE" o "SIN STOCK"
     private String imagen;
     private Boolean activo;
+    private Integer unidadesPorPaquete;
+    private BigDecimal precioSugerido;
 }
 
