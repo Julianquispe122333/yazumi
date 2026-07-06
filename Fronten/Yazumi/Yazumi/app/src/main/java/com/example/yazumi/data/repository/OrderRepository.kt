@@ -1,30 +1,45 @@
 package com.example.yazumi.data.repository
 
 import com.example.yazumi.data.local.SessionManager
-import com.example.yazumi.data.model.CrearPedidoRequest
 import com.example.yazumi.data.model.Pedido
 import com.example.yazumi.data.remote.YazumiApi
+import kotlinx.coroutines.flow.firstOrNull
 
 class OrderRepository(
     private val api: YazumiApi,
-    @Suppress("unused") private val sessionManager: SessionManager,
+    private val sessionManager: SessionManager,
 ) {
 
-    suspend fun crearPedido(direccion: String, observaciones: String?): Result<Pedido> {
-        val response = api.crearPedido(CrearPedidoRequest(direccion, observaciones))
-        return if (response.success && response.data != null) {
-            Result.success(response.data)
-        } else {
-            Result.failure(Exception(response.message ?: "Error al crear pedido"))
+    private suspend fun currentUserId(): Int =
+        sessionManager.currentUser.firstOrNull()?.idUsuario ?: 0
+
+    /** Obtiene el historial de pedidos del usuario actual */
+    suspend fun getPedidos(): Result<List<Pedido>> {
+        return try {
+            val uid = currentUserId()
+            val response = api.getPedidosPorUsuario(uid)
+            if (response.success && response.data != null) {
+                Result.success(response.data)
+            } else {
+                Result.failure(Exception(response.message ?: "Error al cargar pedidos"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
-    suspend fun getPedidos(): Result<List<Pedido>> {
-        val response = api.getPedidos()
-        return if (response.success && response.data != null) {
-            Result.success(response.data)
-        } else {
-            Result.failure(Exception(response.message ?: "Error al cargar pedidos"))
+    /** Obtiene el detalle de un pedido específico */
+    suspend fun getPedido(idPedido: Int): Result<Pedido> {
+        return try {
+            val response = api.getPedido(idPedido)
+            if (response.success && response.data != null) {
+                Result.success(response.data)
+            } else {
+                Result.failure(Exception(response.message ?: "Error al obtener el pedido"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }
+

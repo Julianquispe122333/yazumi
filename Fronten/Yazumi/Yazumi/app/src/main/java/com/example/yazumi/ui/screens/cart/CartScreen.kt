@@ -13,6 +13,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.RemoveShoppingCart
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -41,27 +44,56 @@ import com.example.yazumi.ui.viewmodel.CartViewModel
 fun CartScreen(viewModel: CartViewModel) {
     val uiState by viewModel.uiState.collectAsState()
     val user by viewModel.currentUser.collectAsState()
-    var observaciones by rememberSaveable { mutableStateOf("") }
 
     when {
         uiState.isLoading -> LoadingBox()
         uiState.orderConfirmed -> OrderConfirmation(
-            pedidoId = uiState.confirmedPedido?.idPedido ?: 0,
-            total = uiState.confirmedPedido?.total ?: 0.0,
+            pedidoId = uiState.confirmedCompra?.idPedido ?: 0,
+            total = uiState.confirmedCompra?.total ?: 0.0,
             onDone = { viewModel.resetConfirmation() },
         )
+        uiState.error != null && uiState.carrito.items.isEmpty() -> {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                ErrorMessage(uiState.error ?: "Error al conectar con el servidor")
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = { viewModel.loadCart() }) {
+                    Text("Reintentar")
+                }
+            }
+        }
         else -> {
             val carrito = uiState.carrito
             if (carrito.items.isEmpty()) {
                 Column(
-                    modifier = Modifier.fillMaxSize().padding(32.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    Text("Tu pedido está vacío", style = MaterialTheme.typography.titleLarge)
+                    Icon(
+                        imageVector = Icons.Default.RemoveShoppingCart,
+                        contentDescription = "Pedido vacío",
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                        modifier = Modifier.height(100.dp).width(100.dp)
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
                     Text(
-                        "Agrega productos desde el catálogo",
+                        text = "Tu pedido está vacío",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Agrega deliciosos snacks desde el catálogo para comenzar tu compra.",
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
                 }
             } else {
@@ -104,19 +136,13 @@ fun CartScreen(viewModel: CartViewModel) {
                                 modifier = Modifier.fillMaxWidth(),
                                 readOnly = true,
                             )
-                            OutlinedTextField(
-                                value = observaciones,
-                                onValueChange = { observaciones = it },
-                                label = { Text("Observaciones (opcional)") },
-                                modifier = Modifier.fillMaxWidth(),
-                            )
                             uiState.error?.let {
                                 Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
                             }
                             Spacer(modifier = Modifier.height(12.dp))
                             Button(
                                 onClick = {
-                                    viewModel.confirmOrder(user?.direccion ?: "", observaciones)
+                                    viewModel.confirmOrder(user?.direccion ?: "")
                                 },
                                 modifier = Modifier.fillMaxWidth().height(52.dp),
                                 enabled = !uiState.isConfirming,
@@ -168,8 +194,7 @@ private fun CartItemRow(item: CarritoItem, onQuantityChange: (Int) -> Unit) {
             }
             QuantitySelector(
                 quantity = item.cantidad,
-                onIncrease = { onQuantityChange(item.cantidad + 1) },
-                onDecrease = { onQuantityChange(item.cantidad - 1) },
+                onQuantityChange = { onQuantityChange(it) },
             )
         }
     }

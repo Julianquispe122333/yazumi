@@ -3,6 +3,7 @@ package com.example.yazumi.ui.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material3.Icon
@@ -32,16 +33,18 @@ import com.example.yazumi.ui.screens.cart.CartScreen
 import com.example.yazumi.ui.screens.catalog.CatalogScreen
 import com.example.yazumi.ui.screens.catalog.CategoryProductsScreen
 import com.example.yazumi.ui.screens.home.HomeScreen
+import com.example.yazumi.ui.screens.orders.OrdersScreen
 import com.example.yazumi.ui.screens.product.ProductDetailScreen
 import com.example.yazumi.ui.viewmodel.AuthViewModel
 import com.example.yazumi.ui.viewmodel.CartViewModel
 import com.example.yazumi.ui.viewmodel.CatalogViewModel
 import com.example.yazumi.ui.viewmodel.CategoryProductsViewModel
 import com.example.yazumi.ui.viewmodel.HomeViewModel
+import com.example.yazumi.ui.viewmodel.OrderHistoryViewModel
 import com.example.yazumi.ui.viewmodel.ProductDetailViewModel
 import com.example.yazumi.ui.viewmodel.ViewModelFactory
 
-private val bottomNavRoutes = setOf(Routes.HOME, Routes.CATALOG, Routes.CART)
+private val bottomNavRoutes = setOf(Routes.HOME, Routes.CATALOG, Routes.CART, Routes.ORDERS)
 
 @Composable
 fun YazumiNavHost(container: AppContainer) {
@@ -102,6 +105,18 @@ fun YazumiNavHost(container: AppContainer) {
                         icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Pedido") },
                         label = { Text("Pedido") },
                     )
+                    NavigationBarItem(
+                        selected = currentRoute == Routes.ORDERS,
+                        onClick = {
+                            navController.navigate(Routes.ORDERS) {
+                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        },
+                        icon = { Icon(Icons.Default.Receipt, contentDescription = "Mis pedidos") },
+                        label = { Text("Mis pedidos") },
+                    )
                 }
             }
         },
@@ -139,6 +154,12 @@ fun YazumiNavHost(container: AppContainer) {
                     viewModel = homeViewModel,
                     onProductClick = { navController.navigate(Routes.product(it)) },
                     onCategoryClick = { navController.navigate(Routes.category(it)) },
+                    onLogout = {
+                        authViewModel.logout()
+                        navController.navigate(Routes.LOGIN) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
                 )
             }
             composable(Routes.CATALOG) {
@@ -159,6 +180,8 @@ fun YazumiNavHost(container: AppContainer) {
                 CategoryProductsScreen(
                     viewModel = categoryViewModel,
                     onProductClick = { navController.navigate(Routes.product(it)) },
+                    onBack = { navController.popBackStack() },
+                    onNavigateToCart = { navController.navigate(Routes.CART) }
                 )
             }
             composable(
@@ -172,12 +195,19 @@ fun YazumiNavHost(container: AppContainer) {
                 ProductDetailScreen(
                     viewModel = productViewModel,
                     snackbarHostState = snackbarHostState,
+                    onBack = { navController.popBackStack() },
+                    onNavigateToCart = { navController.navigate(Routes.CART) }
                 )
             }
             composable(Routes.CART) {
                 val cartViewModel: CartViewModel = viewModel(factory = factory)
                 CartScreen(viewModel = cartViewModel)
             }
+            composable(Routes.ORDERS) {
+                val ordersViewModel: OrderHistoryViewModel = viewModel(factory = factory)
+                OrdersScreen(viewModel = ordersViewModel)
+            }
         }
     }
 }
+

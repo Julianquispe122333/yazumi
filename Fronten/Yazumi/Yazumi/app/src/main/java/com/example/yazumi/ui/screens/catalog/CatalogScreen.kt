@@ -17,6 +17,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ShoppingCart
 import com.example.yazumi.ui.components.CategoryGridCard
 import com.example.yazumi.ui.components.ErrorMessage
 import com.example.yazumi.ui.components.LoadingBox
@@ -62,6 +71,8 @@ fun CatalogScreen(
 fun CategoryProductsScreen(
     viewModel: com.example.yazumi.ui.viewmodel.CategoryProductsViewModel,
     onProductClick: (Int) -> Unit,
+    onBack: () -> Unit,
+    onNavigateToCart: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -69,15 +80,38 @@ fun CategoryProductsScreen(
         uiState.isLoading -> LoadingBox()
         uiState.error != null -> ErrorMessage(uiState.error!!)
         else -> Column(modifier = Modifier.fillMaxSize()) {
-            Text(
-                text = uiState.marca,
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(16.dp),
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Volver",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                Text(
+                    text = uiState.marca,
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 8.dp),
+                )
+                IconButton(onClick = onNavigateToCart) {
+                    Icon(
+                        imageVector = Icons.Default.ShoppingCart,
+                        contentDescription = "Ver pedido",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {

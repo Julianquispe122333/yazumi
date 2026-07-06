@@ -24,7 +24,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -125,7 +132,7 @@ fun ProductCard(
         Column(modifier = Modifier.padding(12.dp)) {
             ProductImage(
                 imagenUrl = producto.imagen,
-                marca = producto.marca,
+                marca = producto.marca ?: "SN",
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp),
@@ -227,8 +234,7 @@ fun CategoriesGrid(
 @Composable
 fun QuantitySelector(
     quantity: Int,
-    onIncrease: () -> Unit,
-    onDecrease: () -> Unit,
+    onQuantityChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -236,15 +242,42 @@ fun QuantitySelector(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        IconButton(onClick = onDecrease, modifier = Modifier.size(36.dp)) {
+        IconButton(
+            onClick = { if (quantity > 1) onQuantityChange(quantity - 1) },
+            modifier = Modifier.size(36.dp)
+        ) {
             Icon(Icons.Default.Remove, contentDescription = "Disminuir")
         }
-        Text(
-            text = quantity.toString(),
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
+
+        var textValue by remember(quantity) { mutableStateOf(quantity.toString()) }
+
+        BasicTextField(
+            value = textValue,
+            onValueChange = { newValue ->
+                val filtered = newValue.filter { it.isDigit() }
+                textValue = filtered
+                val parsed = filtered.toIntOrNull() ?: 1
+                if (parsed >= 1) {
+                    onQuantityChange(parsed)
+                }
+            },
+            textStyle = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            ),
+            modifier = Modifier
+                .width(54.dp)
+                .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(8.dp))
+                .padding(vertical = 6.dp, horizontal = 4.dp),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            singleLine = true
         )
-        IconButton(onClick = onIncrease, modifier = Modifier.size(36.dp)) {
+
+        IconButton(
+            onClick = { onQuantityChange(quantity + 1) },
+            modifier = Modifier.size(36.dp)
+        ) {
             Icon(Icons.Default.Add, contentDescription = "Aumentar")
         }
     }

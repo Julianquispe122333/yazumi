@@ -1,204 +1,198 @@
 package com.example.yazumi.data.remote
 
-import com.example.yazumi.data.ProductImages
+import com.example.yazumi.data.model.ActualizarCarritoRequest
+import com.example.yazumi.data.model.AgregarCarritoRequest
 import com.example.yazumi.data.model.ApiResponse
 import com.example.yazumi.data.model.Carrito
 import com.example.yazumi.data.model.CarritoItem
-import com.example.yazumi.data.model.Categoria
-import com.example.yazumi.data.model.CrearPedidoRequest
+import com.example.yazumi.data.model.CategoriaResponseCompat
+import com.example.yazumi.data.model.CompraResponse
+import com.example.yazumi.data.model.ComprarRequest
 import com.example.yazumi.data.model.LoginRequest
 import com.example.yazumi.data.model.Pedido
 import com.example.yazumi.data.model.PedidoItem
 import com.example.yazumi.data.model.Producto
-import com.example.yazumi.data.model.Promocion
 import com.example.yazumi.data.model.RegisterRequest
+import com.example.yazumi.data.model.RegistroResponse
 import com.example.yazumi.data.model.Usuario
 import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import java.util.concurrent.atomic.AtomicInteger
 
+/**
+ * Implementación mock de YazumiApi para desarrollo/pruebas sin backend.
+ * Se activa cuando BuildConfig.USE_MOCK_API = true.
+ */
 class MockYazumiApi : YazumiApi {
 
-    private val codigoValidacion = "FRITOLAY2026"
-    private var currentUser: Usuario? = null
+    private val mockUsuario = Usuario(
+        idUsuario = 1,
+        nombres = "Cliente Demo",
+        telefono = "987654321",
+        direccion = "Av. Principal 123",
+        nombreNegocio = "Tienda Demo",
+    )
+
+    private val mockProductos = listOf(
+        Producto(1, "LAY001", "Lays", "Caja Lays Clásicas", "Papas fritas clásicas en caja para negocio", "Caja de 30 un", 36.00, 50, "DISPONIBLE", null, true, 30, 1.50),
+        Producto(2, "LAY002", "Lays", "Caja Lays Ondas Limón", "Papas fritas sabor limón en caja", "Caja de 30 un", 36.00, 45, "DISPONIBLE", null, true, 30, 1.50),
+        Producto(3, "LAY003", "Lays", "Caja Lays BBQ", "Papas fritas sabor barbacoa", "Caja de 30 un", 38.00, 40, "DISPONIBLE", null, true, 30, 1.60),
+        Producto(4, "LAY004", "Lays", "Caja Lays Flamin Hot", "Picante intenso en caja", "Caja de 30 un", 39.00, 35, "DISPONIBLE", null, true, 30, 1.70),
+        Producto(5, "DOR001", "Doritos", "Caja Doritos Queso Mega", "Snack de tortilla de maíz sabor queso nacho", "Caja de 24 un", 36.00, 40, "DISPONIBLE", null, true, 24, 1.80),
+        Producto(6, "DOR002", "Doritos", "Caja Doritos Flamin Hot", "Nacho picante en caja", "Caja de 24 un", 38.00, 30, "DISPONIBLE", null, true, 24, 1.90),
+        Producto(7, "CHE001", "Cheetos", "Caja Cheetos Crunchy", "Snack horneado de maíz con sabor a queso", "Caja de 30 un", 30.00, 60, "DISPONIBLE", null, true, 30, 1.30),
+        Producto(8, "CHTR001", "Cheese Tris", "Cinta Cheese Tris Original", "Tira/Cinta clásica de Cheese Tris para colgar", "Cinta de 12 un", 12.00, 80, "DISPONIBLE", null, true, 12, 1.20),
+        Producto(9, "CUAT001", "Cuates", "Cinta Cuates Picantes", "Tira/Cinta de cacahuates Cuates picantes", "Cinta de 12 un", 14.40, 75, "DISPONIBLE", null, true, 12, 1.50),
+        Producto(10, "RUF001", "Ruffles", "Caja Ruffles Original", "Papas onduladas Ruffles clásicas saladas", "Caja de 24 un", 31.20, 35, "DISPONIBLE", null, true, 24, 1.60),
+    )
+
     private val carritoItems = mutableMapOf<Int, CarritoItem>()
     private val pedidos = mutableListOf<Pedido>()
-    private val pedidoIdCounter = AtomicInteger(1000)
+    private var pedidoCounter = 1000
 
-    private val productos = listOf(
-        Producto(1, "LAY-001", "Lays Clásicas", "Papas fritas crujientes", "45g", 3.50, 120, ProductImages.forProduct(1, "Lays"), "Lays"),
-        Producto(2, "LAY-002", "Lays Limón", "Sabor limón y sal", "45g", 3.50, 85, ProductImages.forProduct(2, "Lays"), "Lays"),
-        Producto(3, "LAY-003", "Lays BBQ", "Sabor barbacoa ahumada", "45g", 3.80, 60, ProductImages.forProduct(3, "Lays"), "Lays"),
-        Producto(4, "LAY-004", "Lays Flamin Hot", "Picante intenso", "45g", 3.90, 40, ProductImages.forProduct(4, "Lays"), "Lays"),
-        Producto(5, "DOR-001", "Doritos Nacho", "Tortilla con queso nacho", "62g", 4.20, 95, ProductImages.forProduct(5, "Doritos"), "Doritos"),
-        Producto(6, "DOR-002", "Doritos Flamin Hot", "Nacho picante", "62g", 4.50, 70, ProductImages.forProduct(6, "Doritos"), "Doritos"),
-        Producto(7, "DOR-003", "Doritos Dinamita", "Explosión de chile", "55g", 4.20, 55, ProductImages.forProduct(7, "Doritos"), "Doritos"),
-        Producto(8, "CHE-001", "Cheetos Crunchy", "Queso crujiente", "50g", 3.20, 100, ProductImages.forProduct(8, "Cheetos"), "Cheetos"),
-        Producto(9, "CHE-002", "Cheetos Bolitas", "Bolitas de queso", "50g", 3.20, 90, ProductImages.forProduct(9, "Cheetos"), "Cheetos"),
-        Producto(10, "CHE-003", "Cheetos Flamin Hot", "Bolitas picantes", "50g", 3.50, 75, ProductImages.forProduct(10, "Cheetos"), "Cheetos"),
-        Producto(11, "CUA-001", "Cuates Naturales", "Cacahuates salados", "100g", 2.80, 110, ProductImages.forProduct(11, "Cuates"), "Cuates"),
-        Producto(12, "CUA-002", "Cuates Enchilados", "Cacahuates con chile", "100g", 2.80, 80, ProductImages.forProduct(12, "Cuates"), "Cuates"),
-        Producto(13, "CHT-001", "Cheese Tris Original", "Snack de maíz con queso", "55g", 2.50, 130, ProductImages.forProduct(13, "Cheese Tris"), "Cheese Tris"),
-        Producto(14, "CHT-002", "Cheese Tris Hot", "Queso con chile", "55g", 2.80, 65, ProductImages.forProduct(14, "Cheese Tris"), "Cheese Tris"),
-    )
-
-    private val promociones = listOf(
-        Promocion(1, "2x1 en Lays", "Lleva 2 bolsas de Lays Clásicas al precio de 1", null, 50, 0xFFFFD100),
-        Promocion(2, "Combo Doritos", "3 bolsas Doritos Nacho por S/ 10.00", null, 15, 0xFFE31837),
-        Promocion(3, "Semana Cheetos", "10% de descuento en toda la línea Cheetos", null, 10, 0xFF003DA5),
-    )
+    // ─── Autenticación ────────────────────────────────────────────────────────
 
     override suspend fun login(request: LoginRequest): ApiResponse<Usuario> {
-        delay(600)
-        if (request.codigoValidacion != codigoValidacion) {
-            return ApiResponse(false, "Código de validación incorrecto", null)
+        delay(500)
+        return if (request.telefono == "987654321" && request.password == "FRITOLAY2026") {
+            ApiResponse(true, "Login exitoso", mockUsuario)
+        } else {
+            ApiResponse(false, "Credenciales inválidas. Usa 987654321 / FRITOLAY2026", null)
         }
-        val user = Usuario(
-            idUsuario = 1,
-            nombres = "Cliente Demo",
-            telefono = request.telefono,
-            direccion = "Zona 10, Ciudad de Guatemala",
-            nombreNegocio = "Tienda El Buen Snack",
-        )
-        currentUser = user
-        return ApiResponse(true, null, user)
     }
 
-    override suspend fun register(request: RegisterRequest): ApiResponse<Usuario> {
-        delay(800)
-        if (request.codigoValidacion != codigoValidacion) {
-            return ApiResponse(false, "Código de validación incorrecto", null)
-        }
-        val user = Usuario(
-            idUsuario = 2,
-            nombres = request.nombres,
-            telefono = request.telefono,
-            direccion = request.direccion,
-            nombreNegocio = request.nombreNegocio,
+    override suspend fun register(request: RegisterRequest): ApiResponse<RegistroResponse> {
+        delay(600)
+        return ApiResponse(
+            true,
+            "Registro exitoso",
+            RegistroResponse(2, request.nombres, request.telefono, request.direccion, request.nombreNegocio, null),
         )
-        currentUser = user
-        return ApiResponse(true, "Registro exitoso", user)
     }
+
+    // ─── Productos ────────────────────────────────────────────────────────────
 
     override suspend fun getProductos(marca: String?, busqueda: String?): ApiResponse<List<Producto>> {
-        delay(400)
-        var result = productos
-        if (!marca.isNullOrBlank()) {
-            result = result.filter { it.marca.equals(marca, ignoreCase = true) }
+        delay(300)
+        val filtered = mockProductos.filter { p ->
+            (marca == null || p.marca?.equals(marca, ignoreCase = true) == true) &&
+                (busqueda == null || p.nombre.contains(busqueda, ignoreCase = true))
         }
-        if (!busqueda.isNullOrBlank()) {
-            result = result.filter {
-                it.nombre.contains(busqueda, ignoreCase = true) ||
-                    it.marca.contains(busqueda, ignoreCase = true)
-            }
-        }
-        return ApiResponse(true, null, result)
+        return ApiResponse(true, null, filtered)
     }
 
     override suspend fun getProducto(id: Int): ApiResponse<Producto> {
-        delay(300)
-        val producto = productos.find { it.idProducto == id }
-        return if (producto != null) {
-            ApiResponse(true, null, producto)
-        } else {
-            ApiResponse(false, "Producto no encontrado", null)
-        }
+        delay(200)
+        val p = mockProductos.find { it.idProducto == id }
+        return if (p != null) ApiResponse(true, null, p) else ApiResponse(false, "Producto no encontrado", null)
     }
 
-    override suspend fun getCategorias(): ApiResponse<List<Categoria>> {
+    override suspend fun getCategorias(): ApiResponse<List<CategoriaResponseCompat>> {
         delay(300)
-        val categorias = productos
-            .groupBy { it.marca }
-            .map { (marca, items) ->
-                Categoria(
-                    nombre = marca,
-                    imagen = ProductImages.forBrand(marca),
-                    cantidadProductos = items.size,
-                )
-            }
-            .sortedBy { it.nombre }
-        return ApiResponse(true, null, categorias)
+        val cats = mockProductos
+            .mapNotNull { it.marca }
+            .distinct()
+            .map { m -> CategoriaResponseCompat(m, null, mockProductos.count { it.marca == m }) }
+        return ApiResponse(true, null, cats)
     }
 
-    override suspend fun getFavoritos(): ApiResponse<List<Producto>> {
-        delay(300)
-        val favoritos = listOf(
-            productos[0],
-            productos[4],
-            productos[7],
-            productos[12],
-        )
-        return ApiResponse(true, null, favoritos)
+    // ─── Carrito ──────────────────────────────────────────────────────────────
+
+    override suspend fun getCarrito(idUsuario: Int): ApiResponse<Carrito> {
+        delay(200)
+        return ApiResponse(true, null, buildCarrito(idUsuario))
     }
 
-    override suspend fun getPromociones(): ApiResponse<List<Promocion>> {
-        delay(300)
-        return ApiResponse(true, null, promociones)
-    }
-
-    override suspend fun getCarrito(): ApiResponse<Carrito> {
-        delay(300)
-        return ApiResponse(true, null, buildCarrito())
-    }
-
-    override suspend fun updateCarritoItem(productoId: Int, cantidad: Int): ApiResponse<Carrito> {
-        delay(300)
-        val producto = productos.find { it.idProducto == productoId }
+    override suspend fun agregarAlCarrito(request: AgregarCarritoRequest): ApiResponse<Carrito> {
+        delay(200)
+        val producto = mockProductos.find { it.idProducto == request.idProducto }
             ?: return ApiResponse(false, "Producto no encontrado", null)
+        val existing = carritoItems[request.idProducto]
+        val newQty = (existing?.cantidad ?: 0) + request.cantidad
+        carritoItems[request.idProducto] = CarritoItem(
+            idProducto = producto.idProducto,
+            nombreProducto = producto.nombre,
+            imagen = producto.imagen,
+            cantidad = newQty,
+            precioUnitario = producto.precio,
+            subtotal = newQty * producto.precio,
+        )
+        return ApiResponse(true, null, buildCarrito(request.idUsuario))
+    }
 
-        if (cantidad <= 0) {
-            carritoItems.remove(productoId)
-        } else if (cantidad > producto.stock) {
-            return ApiResponse(false, "Stock insuficiente (disponible: ${producto.stock})", null)
+    override suspend fun actualizarCarritoItem(request: ActualizarCarritoRequest): ApiResponse<Carrito> {
+        delay(200)
+        val producto = mockProductos.find { it.idProducto == request.idProducto }
+            ?: return ApiResponse(false, "Producto no encontrado", null)
+        if (request.cantidad <= 0) {
+            carritoItems.remove(request.idProducto)
         } else {
-            carritoItems[productoId] = CarritoItem(
+            carritoItems[request.idProducto] = CarritoItem(
                 idProducto = producto.idProducto,
-                nombre = producto.nombre,
+                nombreProducto = producto.nombre,
                 imagen = producto.imagen,
-                cantidad = cantidad,
+                cantidad = request.cantidad,
                 precioUnitario = producto.precio,
-                stock = producto.stock,
+                subtotal = request.cantidad * producto.precio,
             )
         }
-        return ApiResponse(true, null, buildCarrito())
+        return ApiResponse(true, null, buildCarrito(request.idUsuario))
     }
 
-    override suspend fun crearPedido(request: CrearPedidoRequest): ApiResponse<Pedido> {
-        delay(800)
+    override suspend fun eliminarDelCarrito(idUsuario: Int, idProducto: Int): ApiResponse<Carrito> {
+        delay(200)
+        carritoItems.remove(idProducto)
+        return ApiResponse(true, null, buildCarrito(idUsuario))
+    }
+
+    override suspend fun vaciarCarrito(idUsuario: Int): ApiResponse<Carrito> {
+        delay(200)
+        carritoItems.clear()
+        return ApiResponse(true, null, buildCarrito(idUsuario))
+    }
+
+    override suspend fun comprar(idUsuario: Int, request: ComprarRequest): ApiResponse<CompraResponse> {
+        delay(600)
         if (carritoItems.isEmpty()) {
             return ApiResponse(false, "El carrito está vacío", null)
         }
         val items = carritoItems.values.map {
-            PedidoItem(
-                nombre = it.nombre,
-                cantidad = it.cantidad,
-                precioUnitario = it.precioUnitario,
-                subtotal = it.subtotal,
-            )
+            PedidoItem(it.idProducto, it.nombreProducto, it.cantidad, it.precioUnitario, it.subtotal)
         }
         val total = items.sumOf { it.subtotal }
-        val pedido = Pedido(
-            idPedido = pedidoIdCounter.incrementAndGet(),
-            fechaPedido = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date()),
-            total = total,
+        val idPedido = ++pedidoCounter
+        val compra = CompraResponse(
+            idPedido = idPedido,
+            idUsuario = idUsuario,
+            estado = "Registrado",
+            fechaCompra = "2026-07-01",
             direccionEntrega = request.direccionEntrega,
-            estado = "Pendiente",
-            items = items,
+            detalle = items,
+            total = total,
         )
-        pedidos.add(0, pedido)
+        // Guardar en historial mock
+        pedidos.add(
+            0,
+            Pedido(idPedido, idUsuario, "2026-07-01", "Registrado", request.direccionEntrega, items, total),
+        )
         carritoItems.clear()
-        return ApiResponse(true, "Pedido registrado correctamente", pedido)
+        return ApiResponse(true, "Compra realizada", compra)
     }
 
-    override suspend fun getPedidos(): ApiResponse<List<Pedido>> {
-        delay(400)
+    // ─── Pedidos ──────────────────────────────────────────────────────────────
+
+    override suspend fun getPedidosPorUsuario(idUsuario: Int): ApiResponse<List<Pedido>> {
+        delay(300)
         return ApiResponse(true, null, pedidos.toList())
     }
 
-    private fun buildCarrito() = Carrito(
+    override suspend fun getPedido(idPedido: Int): ApiResponse<Pedido> {
+        delay(200)
+        val p = pedidos.find { it.idPedido == idPedido }
+        return if (p != null) ApiResponse(true, null, p) else ApiResponse(false, "Pedido no encontrado", null)
+    }
+
+    private fun buildCarrito(idUsuario: Int = 1) = Carrito(
         idCarrito = 1,
+        idUsuario = idUsuario,
         items = carritoItems.values.toList(),
     )
 }

@@ -3,6 +3,7 @@ package com.example.yazumi.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.yazumi.data.model.CompraResponse
 import com.example.yazumi.data.repository.AuthRepository
 import com.example.yazumi.data.repository.CartRepository
 import com.example.yazumi.data.repository.OrderRepository
@@ -13,6 +14,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
 
 class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
@@ -25,21 +28,41 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
-    fun login(telefono: String, codigo: String) {
+    fun login(telefono: String, password: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            authRepository.login(telefono, codigo)
+            authRepository.login(telefono, password)
                 .onSuccess { _uiState.value = AuthUiState(isLoading = false, success = true) }
                 .onFailure { _uiState.value = AuthUiState(isLoading = false, error = it.message) }
         }
     }
 
-    fun register(nombres: String, telefono: String, direccion: String, negocio: String, codigo: String) {
+    fun register(
+        codigoValidacion: String,
+        nombres: String,
+        telefono: String,
+        password: String,
+        direccion: String,
+        negocio: String,
+    ) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            authRepository.register(nombres, telefono, direccion, negocio.ifBlank { null }, codigo)
+            authRepository.register(
+                codigoValidacion = codigoValidacion,
+                nombres = nombres,
+                telefono = telefono,
+                password = password,
+                direccion = direccion,
+                nombreNegocio = negocio.ifBlank { null },
+            )
                 .onSuccess { _uiState.value = AuthUiState(isLoading = false, success = true) }
                 .onFailure { _uiState.value = AuthUiState(isLoading = false, error = it.message) }
+        }
+    }
+
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.logout()
         }
     }
 
@@ -53,6 +76,8 @@ data class AuthUiState(
     val error: String? = null,
     val success: Boolean = false,
 )
+
+// ─── Home ─────────────────────────────────────────────────────────────────────
 
 class HomeViewModel(private val productRepository: ProductRepository) : ViewModel() {
 
@@ -97,6 +122,8 @@ data class HomeUiState(
     val categorias: List<com.example.yazumi.data.model.Categoria> = emptyList(),
 )
 
+// ─── Catalog ──────────────────────────────────────────────────────────────────
+
 class CatalogViewModel(private val productRepository: ProductRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CatalogUiState(isLoading = true))
@@ -121,6 +148,8 @@ data class CatalogUiState(
     val error: String? = null,
     val categorias: List<com.example.yazumi.data.model.Categoria> = emptyList(),
 )
+
+// ─── CategoryProducts ─────────────────────────────────────────────────────────
 
 class CategoryProductsViewModel(
     private val productRepository: ProductRepository,
@@ -151,6 +180,8 @@ data class CategoryProductsUiState(
     val productos: List<com.example.yazumi.data.model.Producto> = emptyList(),
 )
 
+// ─── ProductDetail ────────────────────────────────────────────────────────────
+
 class ProductDetailViewModel(
     private val productRepository: ProductRepository,
     private val cartRepository: CartRepository,
@@ -176,7 +207,8 @@ class ProductDetailViewModel(
     fun addToCart(quantity: Int) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isAdding = true, message = null)
-            cartRepository.updateItem(productId, quantity)
+            // Intenta agregar primero; si falla, intenta actualizar
+            cartRepository.agregarItem(productId, quantity)
                 .onSuccess {
                     _uiState.value = _uiState.value.copy(
                         isAdding = false,
@@ -184,7 +216,17 @@ class ProductDetailViewModel(
                     )
                 }
                 .onFailure {
-                    _uiState.value = _uiState.value.copy(isAdding = false, error = it.message)
+                    // Si ya existe el item, intentar actualizar
+                    cartRepository.updateItem(productId, quantity)
+                        .onSuccess {
+                            _uiState.value = _uiState.value.copy(
+                                isAdding = false,
+                                message = "Cantidad actualizada en el pedido",
+                            )
+                        }
+                        .onFailure { err ->
+                            _uiState.value = _uiState.value.copy(isAdding = false, error = err.message)
+                        }
                 }
         }
     }
@@ -201,6 +243,8 @@ data class ProductDetailUiState(
     val message: String? = null,
     val producto: com.example.yazumi.data.model.Producto? = null,
 )
+
+// ─── Cart ─────────────────────────────────────────────────────────────────────
 
 class CartViewModel(
     private val cartRepository: CartRepository,
@@ -238,16 +282,16 @@ class CartViewModel(
         }
     }
 
-    fun confirmOrder(direccion: String, observaciones: String) {
+    fun confirmOrder(direccion: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isConfirming = true, error = null)
-            orderRepository.crearPedido(direccion, observaciones.ifBlank { null })
-                .onSuccess {
+            cartRepository.comprar(direccion)
+                .onSuccess { compra ->
                     _uiState.value = _uiState.value.copy(
                         isConfirming = false,
                         orderConfirmed = true,
-                        confirmedPedido = it,
-                        carrito = com.example.yazumi.data.model.Carrito(1, emptyList()),
+                        confirmedCompra = compra,
+                        carrito = com.example.yazumi.data.model.Carrito(1, items = emptyList()),
                     )
                 }
                 .onFailure {
@@ -257,7 +301,7 @@ class CartViewModel(
     }
 
     fun resetConfirmation() {
-        _uiState.value = _uiState.value.copy(orderConfirmed = false, confirmedPedido = null)
+        _uiState.value = _uiState.value.copy(orderConfirmed = false, confirmedCompra = null)
         loadCart()
     }
 }
@@ -266,10 +310,39 @@ data class CartUiState(
     val isLoading: Boolean = false,
     val isConfirming: Boolean = false,
     val error: String? = null,
-    val carrito: com.example.yazumi.data.model.Carrito = com.example.yazumi.data.model.Carrito(1, emptyList()),
+    val carrito: com.example.yazumi.data.model.Carrito = com.example.yazumi.data.model.Carrito(1, items = emptyList()),
     val orderConfirmed: Boolean = false,
-    val confirmedPedido: com.example.yazumi.data.model.Pedido? = null,
+    val confirmedCompra: CompraResponse? = null,
 )
+
+// ─── OrderHistory ─────────────────────────────────────────────────────────────
+
+class OrderHistoryViewModel(private val orderRepository: OrderRepository) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(OrderHistoryUiState(isLoading = true))
+    val uiState: StateFlow<OrderHistoryUiState> = _uiState.asStateFlow()
+
+    init {
+        loadPedidos()
+    }
+
+    fun loadPedidos() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            orderRepository.getPedidos()
+                .onSuccess { _uiState.value = OrderHistoryUiState(pedidos = it) }
+                .onFailure { _uiState.value = OrderHistoryUiState(error = it.message) }
+        }
+    }
+}
+
+data class OrderHistoryUiState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val pedidos: List<com.example.yazumi.data.model.Pedido> = emptyList(),
+)
+
+// ─── ViewModelFactory ─────────────────────────────────────────────────────────
 
 class ViewModelFactory(
     private val authRepository: AuthRepository,
@@ -289,6 +362,8 @@ class ViewModelFactory(
                 CatalogViewModel(productRepository) as T
             modelClass.isAssignableFrom(CartViewModel::class.java) ->
                 CartViewModel(cartRepository, orderRepository, authRepository) as T
+            modelClass.isAssignableFrom(OrderHistoryViewModel::class.java) ->
+                OrderHistoryViewModel(orderRepository) as T
             else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
         }
     }
@@ -307,3 +382,4 @@ class ViewModelFactory(
         }
     }
 }
+
