@@ -32,16 +32,16 @@ class MockYazumiApi : YazumiApi {
     )
 
     private val mockProductos = listOf(
-        Producto(1, "LAY001", "Lays", "Caja Lays Clásicas", "Papas fritas clásicas en caja para negocio", "Caja de 30 un", 36.00, 50, "DISPONIBLE", null, true, 30, 1.50),
-        Producto(2, "LAY002", "Lays", "Caja Lays Ondas Limón", "Papas fritas sabor limón en caja", "Caja de 30 un", 36.00, 45, "DISPONIBLE", null, true, 30, 1.50),
-        Producto(3, "LAY003", "Lays", "Caja Lays BBQ", "Papas fritas sabor barbacoa", "Caja de 30 un", 38.00, 40, "DISPONIBLE", null, true, 30, 1.60),
-        Producto(4, "LAY004", "Lays", "Caja Lays Flamin Hot", "Picante intenso en caja", "Caja de 30 un", 39.00, 35, "DISPONIBLE", null, true, 30, 1.70),
-        Producto(5, "DOR001", "Doritos", "Caja Doritos Queso Mega", "Snack de tortilla de maíz sabor queso nacho", "Caja de 24 un", 36.00, 40, "DISPONIBLE", null, true, 24, 1.80),
-        Producto(6, "DOR002", "Doritos", "Caja Doritos Flamin Hot", "Nacho picante en caja", "Caja de 24 un", 38.00, 30, "DISPONIBLE", null, true, 24, 1.90),
-        Producto(7, "CHE001", "Cheetos", "Caja Cheetos Crunchy", "Snack horneado de maíz con sabor a queso", "Caja de 30 un", 30.00, 60, "DISPONIBLE", null, true, 30, 1.30),
-        Producto(8, "CHTR001", "Cheese Tris", "Cinta Cheese Tris Original", "Tira/Cinta clásica de Cheese Tris para colgar", "Cinta de 12 un", 12.00, 80, "DISPONIBLE", null, true, 12, 1.20),
-        Producto(9, "CUAT001", "Cuates", "Cinta Cuates Picantes", "Tira/Cinta de cacahuates Cuates picantes", "Cinta de 12 un", 14.40, 75, "DISPONIBLE", null, true, 12, 1.50),
-        Producto(10, "RUF001", "Ruffles", "Caja Ruffles Original", "Papas onduladas Ruffles clásicas saladas", "Caja de 24 un", 31.20, 35, "DISPONIBLE", null, true, 24, 1.60),
+        Producto(1, "LAY001", "Lays", "Caja Lays Clásicas", "1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Papas Fritas Clásicas Lay's\nFormato de Venta: Caja\nContenido por Unidad: 45g\nUnidades por Empaque Corrugado: 30 uds.", "Caja de 30 un", 36.00, 50, "DISPONIBLE", null, true, 30, 1.50),
+        Producto(2, "LAY002", "Lays", "Caja Lays Ondas Limón", "1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Papas Fritas Lay's Ondas sabor Limón\nFormato de Venta: Caja\nContenido por Unidad: 45g\nUnidades por Empaque Corrugado: 30 uds.", "Caja de 30 un", 36.00, 45, "DISPONIBLE", null, true, 30, 1.50),
+        Producto(3, "LAY003", "Lays", "Caja Lays BBQ", "1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Papas Fritas Lay's sabor Barbacoa (BBQ)\nFormato de Venta: Caja\nContenido por Unidad: 45g\nUnidades por Empaque Corrugado: 30 uds.", "Caja de 30 un", 38.00, 40, "DISPONIBLE", null, true, 30, 1.60),
+        Producto(4, "LAY004", "Lays", "Caja Lays Flamin Hot", "1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Papas Fritas Lay's sabor Flamin Hot\nFormato de Venta: Caja\nContenido por Unidad: 45g\nUnidades por Empaque Corrugado: 30 uds.", "Caja de 30 un", 39.00, 35, "DISPONIBLE", null, true, 30, 1.70),
+        Producto(5, "DOR001", "Doritos", "Caja Doritos Queso Mega", "1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Tortillas de Maíz Doritos sabor Queso Mega\nFormato de Venta: Caja\nContenido por Unidad: 50g\nUnidades por Empaque Corrugado: 24 uds.", "Caja de 24 un", 36.00, 40, "DISPONIBLE", null, true, 24, 1.80),
+        Producto(6, "DOR002", "Doritos", "Caja Doritos Flamin Hot", "1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Tortillas de Maíz Doritos sabor Flamin Hot\nFormato de Venta: Caja\nContenido por Unidad: 50g\nUnidades por Empaque Corrugado: 24 uds.", "Caja de 24 un", 38.00, 30, "DISPONIBLE", null, true, 24, 1.90),
+        Producto(7, "CHE001", "Cheetos", "Caja Cheetos Crunchy", "1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Chizitos Horneados Cheetos Crunchy sabor Queso\nFormato de Venta: Caja\nContenido por Unidad: 40g\nUnidades por Empaque Corrugado: 30 uds.", "Caja de 30 un", 30.00, 60, "DISPONIBLE", null, true, 30, 1.30),
+        Producto(8, "CHTR001", "Cheese Tris", "Cinta Cheese Tris Original", "1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Extruidos de Maíz Cheese Tris Sabor Queso\nFormato de Venta: Cinta\nContenido por Unidad: 35g\nUnidades por Empaque Corrugado: 12 uds.", "Cinta de 12 un", 12.00, 80, "DISPONIBLE", null, true, 12, 1.20),
+        Producto(9, "CUAT001", "Cuates", "Cinta Cuates Picantes", "1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Cacahuates Cuates Picantes\nFormato de Venta: Cinta\nContenido por Unidad: 40g\nUnidades por Empaque Corrugado: 12 uds.", "Cinta de 12 un", 14.40, 75, "DISPONIBLE", null, true, 12, 1.50),
+        Producto(10, "RUF001", "Ruffles", "Caja Ruffles Original", "1. Ficha Técnica y Presentación Logística\nNombre Comercial Oficial: Papas Fritas Onduladas Ruffles Originales\nFormato de Venta: Caja\nContenido por Unidad: 45g\nUnidades por Empaque Corrugado: 24 uds.", "Caja de 24 un", 31.20, 35, "DISPONIBLE", null, true, 24, 1.60),
     )
 
     private val carritoItems = mutableMapOf<Int, CarritoItem>()
