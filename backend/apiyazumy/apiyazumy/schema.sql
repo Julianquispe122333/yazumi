@@ -46,6 +46,7 @@ REFERENCES codigos_validacion(id_codigo)
 CREATE TABLE productos (
 id_producto INT AUTO_INCREMENT PRIMARY KEY,
 codigo_producto VARCHAR(50),
+marca VARCHAR(100),
 nombre VARCHAR(150) NOT NULL,
 descripcion TEXT,
 presentacion VARCHAR(100),
@@ -53,6 +54,8 @@ precio DECIMAL(10,2) NOT NULL,
 stock INT DEFAULT 0,
 imagen VARCHAR(255),
 activo TINYINT(1) DEFAULT 1,
+unidades_por_paquete INT DEFAULT 1,
+precio_sugerido DECIMAL(10,2) DEFAULT 0.00,
 fecha_actualizacion DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -124,7 +127,6 @@ id_usuario INT NOT NULL,
 id_estado INT NOT NULL DEFAULT 1,
 fecha_pedido DATETIME DEFAULT CURRENT_TIMESTAMP,
 direccion_entrega VARCHAR(255) NOT NULL,
-observaciones TEXT,
 total DECIMAL(10,2) NOT NULL DEFAULT 0,
 
 CONSTRAINT fk_pedido_usuario
@@ -163,27 +165,6 @@ UNIQUE(id_pedido, id_producto)
 );
 
 -- ==========================================
--- HISTORIAL ESTADOS
--- ==========================================
-
-CREATE TABLE historial_estados (
-id_historial INT AUTO_INCREMENT PRIMARY KEY,
-id_pedido INT NOT NULL,
-id_estado INT NOT NULL,
-fecha DATETIME DEFAULT CURRENT_TIMESTAMP,
-
-CONSTRAINT fk_historial_pedido
-FOREIGN KEY (id_pedido)
-REFERENCES pedidos(id_pedido)
-ON DELETE CASCADE,
-
-CONSTRAINT fk_historial_estado
-FOREIGN KEY (id_estado)
-REFERENCES estados_pedido(id_estado)
-
-);
-
--- ==========================================
 -- INDICES
 -- ==========================================
 
@@ -192,9 +173,6 @@ ON productos(nombre);
 
 CREATE INDEX idx_pedido_usuario
 ON pedidos(id_usuario);
-
-CREATE INDEX idx_historial_pedido
-ON historial_estados(id_pedido);
 
 -- ==========================================
 -- DATOS DE PRUEBA
@@ -221,39 +199,99 @@ VALUES (
 );
 
 INSERT INTO productos (
-codigo_producto,
-nombre,
-descripcion,
-presentacion,
-precio,
-stock,
-activo
+    codigo_producto,
+    marca,
+    nombre,
+    descripcion,
+    presentacion,
+    precio,
+    stock,
+    unidades_por_paquete,
+    precio_sugerido,
+    activo
 )
 VALUES
 (
-'LAYS001',
-'Papas Lays Clásicas',
-'Papas fritas clásicas',
-'Bolsa 40g',
-2.50,
-100,
-1
+    'LAYS001',
+    'Lays',
+    'Caja Lays Clásicas',
+    'Papas fritas clásicas en caja para negocio',
+    'Caja de 30 un',
+    36.00,
+    50,
+    30,
+    1.50,
+    1
 ),
 (
-'DORI001',
-'Doritos Queso',
-'Snack sabor queso',
-'Bolsa 45g',
-3.00,
-80,
-1
+    'LAYS002',
+    'Lays',
+    'Caja Lays Ondas Limón',
+    'Papas fritas sabor limón en caja',
+    'Caja de 30 un',
+    36.00,
+    45,
+    30,
+    1.50,
+    1
 ),
 (
-'CHEE001',
-'Cheetos',
-'Snack sabor queso',
-'Bolsa 35g',
-2.20,
-120,
-1
+    'DORI001',
+    'Doritos',
+    'Caja Doritos Queso Mega',
+    'Snack de tortilla de maíz sabor queso nacho',
+    'Caja de 24 un',
+    36.00,
+    40,
+    24,
+    1.80,
+    1
+),
+(
+    'CHEE001',
+    'Cheetos',
+    'Caja Cheetos Crunchy',
+    'Snack horneado de maíz con sabor a queso',
+    'Caja de 30 un',
+    30.00,
+    60,
+    30,
+    1.30,
+    1
+),
+(
+    'CHTR001',
+    'Cheese Tris',
+    'Cinta Cheese Tris Original',
+    'Tira/Cinta clásica de Cheese Tris para colgar',
+    'Cinta de 12 un',
+    12.00,
+    80,
+    12,
+    1.20,
+    1
+),
+(
+    'CUAT001',
+    'Cuates',
+    'Cinta Cuates Picantes',
+    'Tira/Cinta de cacahuates Cuates picantes',
+    'Cinta de 12 un',
+    14.40,
+    75,
+    12,
+    1.50,
+    1
+),
+(
+    'RUF001',
+    'Ruffles',
+    'Caja Ruffles Original',
+    'Papas onduladas Ruffles clásicas saladas',
+    'Caja de 24 un',
+    31.20,
+    35,
+    24,
+    1.60,
+    1
 );

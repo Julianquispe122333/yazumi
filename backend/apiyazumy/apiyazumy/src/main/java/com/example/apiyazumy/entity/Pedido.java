@@ -34,7 +34,5 @@ public class Pedido {
     @Column(name = "direccion_entrega")
     private String direccionEntrega;
 
-    private String observaciones;
-
     private BigDecimal total;
 }

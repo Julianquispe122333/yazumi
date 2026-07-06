@@ -79,7 +79,6 @@ public class PedidoBusinessImpl implements PedidoBusiness {
                 .estado(pedido.getEstadoPedido() != null ? pedido.getEstadoPedido().getNombre() : null)
                 .fechaPedido(pedido.getFechaPedido())
                 .direccionEntrega(pedido.getDireccionEntrega())
-                .observaciones(pedido.getObservaciones())
                 .detalle(detallesDTO)
                 .total(pedido.getTotal())
                 .build();

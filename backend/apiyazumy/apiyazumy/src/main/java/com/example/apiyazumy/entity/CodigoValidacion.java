@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "configuracion")
+@Table(name = "codigos_validacion")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,10 +13,11 @@ import lombok.*;
 public class CodigoValidacion {
 
     @Id
-    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_codigo")
     private Integer id;
 
-    @Column(name = "codigo_validacion", nullable = false, length = 50)
+    @Column(name = "codigo", nullable = false, length = 50)
     private String codigoValidacion;
 
 }

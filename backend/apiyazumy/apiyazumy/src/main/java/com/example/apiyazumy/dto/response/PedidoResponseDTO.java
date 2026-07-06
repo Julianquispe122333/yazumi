@@ -20,7 +20,6 @@ public class PedidoResponseDTO {
     private String estado;
     private LocalDateTime fechaPedido;
     private String direccionEntrega;
-    private String observaciones;
     private List<DetallePedidoResponseDTO> detalle;
     private BigDecimal total;
 

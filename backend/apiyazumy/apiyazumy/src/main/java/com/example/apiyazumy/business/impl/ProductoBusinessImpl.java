@@ -1,6 +1,7 @@
 package com.example.apiyazumy.business.impl;
 
 import com.example.apiyazumy.business.ProductoBusiness;
+import com.example.apiyazumy.dto.response.CategoriaResponseDTO;
 import com.example.apiyazumy.dto.response.ProductoResponseDTO;
 import com.example.apiyazumy.entity.Producto;
 import com.example.apiyazumy.exception.ProductoNoEncontradoException;
@@ -9,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +25,7 @@ public class ProductoBusinessImpl implements ProductoBusiness {
         return ProductoResponseDTO.builder()
                 .idProducto(p.getIdProducto())
                 .codigoProducto(p.getCodigoProducto())
+                .marca(p.getMarca())
                 .nombre(p.getNombre())
                 .descripcion(p.getDescripcion())
                 .presentacion(p.getPresentacion())
@@ -61,5 +65,24 @@ public class ProductoBusinessImpl implements ProductoBusiness {
                 .filter(p -> Boolean.TRUE.equals(p.getActivo()))
                 .orElseThrow(() -> new ProductoNoEncontradoException("PRODUCTO_NO_ENCONTRADO"));
         return toResponse(producto);
+    }
+
+    // ─── LISTAR CATEGORIAS (agrupadas por marca) ───────────────────────────────
+
+    @Override
+    public List<CategoriaResponseDTO> listarCategorias() {
+        List<Producto> activos = productoRepository.findByActivoTrueOrderByNombreAsc();
+        Map<String, List<Producto>> porMarca = activos.stream()
+                .filter(p -> p.getMarca() != null && !p.getMarca().isBlank())
+                .collect(Collectors.groupingBy(Producto::getMarca));
+
+        return porMarca.entrySet().stream()
+                .map(e -> CategoriaResponseDTO.builder()
+                        .nombre(e.getKey())
+                        .imagen(null)
+                        .cantidadProductos(e.getValue().size())
+                        .build())
+                .sorted((a, b) -> a.getNombre().compareToIgnoreCase(b.getNombre()))
+                .collect(Collectors.toList());
     }
 }

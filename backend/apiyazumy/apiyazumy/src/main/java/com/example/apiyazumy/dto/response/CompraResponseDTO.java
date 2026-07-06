@@ -20,7 +20,6 @@ public class CompraResponseDTO {
     private String estado;              // "CONFIRMADO"
     private LocalDateTime fechaCompra;
     private String direccionEntrega;
-    private String observaciones;
     private List<DetallePedidoResponseDTO> detalle;
     private BigDecimal total;
 

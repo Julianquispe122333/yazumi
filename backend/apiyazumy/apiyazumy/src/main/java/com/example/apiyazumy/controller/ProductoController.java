@@ -2,6 +2,7 @@ package com.example.apiyazumy.controller;
 
 import com.example.apiyazumy.business.ProductoBusiness;
 import com.example.apiyazumy.dto.response.ApiResponse;
+import com.example.apiyazumy.dto.response.CategoriaResponseDTO;
 import com.example.apiyazumy.dto.response.ProductoResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,29 @@ public class ProductoController {
 
     // GET /api/productos
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ProductoResponseDTO>>> listar() {
+    public ResponseEntity<ApiResponse<List<ProductoResponseDTO>>> listar(
+            @RequestParam(required = false) String marca,
+            @RequestParam(required = false) String busqueda) {
+
+        List<ProductoResponseDTO> productos;
+        if (marca != null && !marca.isBlank()) {
+            productos = productoBusiness.listarProductos().stream()
+                    .filter(p -> marca.equalsIgnoreCase(p.getMarca()))
+                    .toList();
+        } else if (busqueda != null && !busqueda.isBlank()) {
+            productos = productoBusiness.buscarPorNombre(busqueda);
+        } else {
+            productos = productoBusiness.listarProductos();
+        }
+        return ResponseEntity.ok(ApiResponse.success("Productos obtenidos exitosamente", productos));
+    }
+
+    // GET /api/productos/categorias
+    @GetMapping("/categorias")
+    public ResponseEntity<ApiResponse<List<CategoriaResponseDTO>>> listarCategorias() {
         return ResponseEntity.ok(ApiResponse.success(
-                "Productos obtenidos exitosamente",
-                productoBusiness.listarProductos()));
+                "Categorías obtenidas exitosamente",
+                productoBusiness.listarCategorias()));
     }
 
     // GET /api/productos/buscar?nombre=xxx
@@ -40,3 +60,4 @@ public class ProductoController {
                 productoBusiness.obtenerPorId(idProducto)));
     }
 }
+

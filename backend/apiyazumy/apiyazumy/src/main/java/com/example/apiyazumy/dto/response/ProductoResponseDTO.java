@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 public class ProductoResponseDTO {
     private Integer idProducto;
     private String codigoProducto;
+    private String marca;
     private String nombre;
     private String descripcion;
     private String presentacion;
@@ -23,3 +24,4 @@ public class ProductoResponseDTO {
     private String imagen;
     private Boolean activo;
 }
+

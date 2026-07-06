@@ -23,6 +23,8 @@ public class Producto {
     @Column(name = "codigo_producto")
     private String codigoProducto;
 
+    private String marca;
+
     private String nombre;
 
     private String descripcion;
@@ -36,6 +38,12 @@ public class Producto {
     private String imagen;
 
     private Boolean activo;
+
+    @Column(name = "unidades_por_paquete")
+    private Integer unidadesPorPaquete;
+
+    @Column(name = "precio_sugerido")
+    private BigDecimal precioSugerido;
 
     @Column(name = "fecha_actualizacion")
     private LocalDateTime fechaActualizacion;

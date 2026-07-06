@@ -11,5 +11,4 @@ public class ComprarRequestDTO {
 
     // Campos opcionales que el usuario puede enviar al confirmar la compra
     private String direccionEntrega;
-    private String observaciones;
 }

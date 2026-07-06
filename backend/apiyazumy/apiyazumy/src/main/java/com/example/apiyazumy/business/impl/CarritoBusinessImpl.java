@@ -298,7 +298,6 @@ public class CarritoBusinessImpl implements CarritoBusiness {
                 .estadoPedido(estadoConfirmado)
                 .fechaPedido(LocalDateTime.now())
                 .direccionEntrega(direccionEntrega)
-                .observaciones(request != null ? request.getObservaciones() : null)
                 .total(total)
                 .build();
         pedidoRepository.save(pedido);
@@ -339,7 +338,6 @@ public class CarritoBusinessImpl implements CarritoBusiness {
                 .estado(estadoConfirmado.getNombre())
                 .fechaCompra(pedido.getFechaPedido())
                 .direccionEntrega(pedido.getDireccionEntrega())
-                .observaciones(pedido.getObservaciones())
                 .detalle(detalleResponse)
                 .total(total)
                 .build();
