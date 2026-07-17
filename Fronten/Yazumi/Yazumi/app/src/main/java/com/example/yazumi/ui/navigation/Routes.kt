@@ -1,5 +1,7 @@
 package com.example.yazumi.ui.navigation
 
+import android.net.Uri
+
 object Routes {
     const val LOGIN = "login"
     const val REGISTER = "register"
@@ -11,6 +13,11 @@ object Routes {
     const val ORDERS = "orders"
     const val ADMIN_DASHBOARD = "admin_dashboard"
 
-    fun category(marca: String) = "category/$marca"
+    /**
+     * URL-encodes the category name so that names with spaces or
+     * special characters (e.g. "Piqueo Snax", "Doritos Flamin Hot")
+     * don't break the navigation route matching.
+     */
+    fun category(marca: String) = "category/${Uri.encode(marca)}"
     fun product(id: Int) = "product/$id"
 }

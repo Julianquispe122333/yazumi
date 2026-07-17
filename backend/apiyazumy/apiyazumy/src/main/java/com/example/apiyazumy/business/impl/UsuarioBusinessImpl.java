@@ -25,7 +25,7 @@ public class UsuarioBusinessImpl implements UsuarioBusiness {
     @Override
     public RegistroResponseDTO registrar(RegistroRequestDTO request) {
         // 1. Validar código en configuracion.
-        com.example.apiyazumy.entity.CodigoValidacion cod = configuracionRepository.findByCodigoValidacion(request.getCodigoValidacion())
+        com.example.apiyazumy.entity.CodigoValidacion cod = configuracionRepository.findByCodigoValidacion(request.getCodigoValidacion().trim())
                 .orElseThrow(() -> new CodigoInvalidoException("El código de validación ingresado es incorrecto o no existe."));
 
         // 2. Verificar que teléfono no exista.

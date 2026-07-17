@@ -36,7 +36,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
     fun login(telefono: String, password: String) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null, success = false)
             authRepository.login(telefono, password)
                 .onSuccess { _uiState.value = AuthUiState(isLoading = false, success = true) }
                 .onFailure { _uiState.value = AuthUiState(isLoading = false, error = it.message) }
@@ -52,7 +52,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         negocio: String,
     ) {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null, success = false)
             authRepository.register(
                 codigoValidacion = codigoValidacion,
                 nombres = nombres,
@@ -69,6 +69,7 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     fun logout() {
         viewModelScope.launch {
             authRepository.logout()
+            _uiState.value = AuthUiState(success = false)
         }
     }
 

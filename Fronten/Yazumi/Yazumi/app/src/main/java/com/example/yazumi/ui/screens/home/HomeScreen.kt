@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -52,7 +53,17 @@ fun HomeScreen(
 
     when {
         uiState.isLoading -> LoadingBox()
-        uiState.error != null -> ErrorMessage(uiState.error!!)
+        uiState.error != null -> Column(
+            modifier = Modifier.fillMaxSize().padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            ErrorMessage(uiState.error!!)
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = { viewModel.loadHome() }) {
+                Text("Reintentar")
+            }
+        }
         else -> Column(
             modifier = Modifier
                 .fillMaxSize()

@@ -97,8 +97,17 @@ fun ProductImage(
         return
     }
 
+    val fullUrl = remember(imagenUrl) {
+        if (!imagenUrl.startsWith("http://") && !imagenUrl.startsWith("https://")) {
+            val baseHost = com.example.yazumi.BuildConfig.API_BASE_URL.substringBefore("/api/") + "/"
+            baseHost + imagenUrl.removePrefix("/")
+        } else {
+            imagenUrl
+        }
+    }
+
     SubcomposeAsyncImage(
-        model = imagenUrl,
+        model = fullUrl,
         contentDescription = marca,
         modifier = modifier.clip(RoundedCornerShape(12.dp)),
         contentScale = contentScale,

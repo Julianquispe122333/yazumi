@@ -37,7 +37,11 @@ class SessionManager(private val context: Context) {
             prefs[KEY_NOMBRES] = usuario.nombres
             prefs[KEY_TELEFONO] = usuario.telefono
             prefs[KEY_DIRECCION] = usuario.direccion
-            usuario.nombreNegocio?.let { prefs[KEY_NEGOCIO] = it }
+            if (usuario.nombreNegocio != null) {
+                prefs[KEY_NEGOCIO] = usuario.nombreNegocio
+            } else {
+                prefs.remove(KEY_NEGOCIO)
+            }
             prefs[KEY_ES_ADMIN] = usuario.esAdmin
         }
     }

@@ -20,7 +20,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -47,6 +46,7 @@ import com.example.yazumi.ui.viewmodel.OrderHistoryViewModel
 import com.example.yazumi.ui.viewmodel.ProductDetailViewModel
 import com.example.yazumi.ui.viewmodel.ViewModelFactory
 
+// Rutas que muestran la barra de navegación inferior
 private val bottomNavRoutes = setOf(Routes.HOME, Routes.CATALOG, Routes.CART, Routes.ORDERS)
 
 @Composable
@@ -68,31 +68,42 @@ fun YazumiNavHost(container: AppContainer) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    // ─── Guardia de sesión ────────────────────────────────────────────────────
+    // startDestination es siempre Routes.LOGIN (fijo), la redirección se hace aquí.
     LaunchedEffect(isLoggedIn, currentUser) {
-        if (!isLoggedIn) {
-            navController.navigate(Routes.LOGIN) {
-                popUpTo(0) { inclusive = true }
-            }
-        } else {
-            currentUser?.let { user ->
-                if (user.esAdmin) {
-                    if (currentRoute != Routes.ADMIN_DASHBOARD) {
-                        navController.navigate(Routes.ADMIN_DASHBOARD) {
-                            popUpTo(0) { inclusive = true }
-                        }
+        when {
+            !isLoggedIn -> {
+                // Si no está autenticado, enviar a login limpiando todo el backstack
+                if (currentRoute != Routes.LOGIN && currentRoute != Routes.REGISTER) {
+                    navController.navigate(Routes.LOGIN) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
                     }
-                } else {
-                    if (currentRoute == Routes.LOGIN || currentRoute == Routes.ADMIN_DASHBOARD) {
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(0) { inclusive = true }
-                        }
+                }
+            }
+            currentUser?.esAdmin == true -> {
+                // Admin: sólo redirigir si aún está en pantallas de auth o usuario normal
+                if (currentRoute == Routes.LOGIN || currentRoute == Routes.REGISTER ||
+                    currentRoute in bottomNavRoutes
+                ) {
+                    navController.navigate(Routes.ADMIN_DASHBOARD) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                }
+            }
+            currentUser != null -> {
+                // Usuario normal: redirigir desde login/registro/admin a home
+                if (currentRoute == Routes.LOGIN || currentRoute == Routes.REGISTER ||
+                    currentRoute == Routes.ADMIN_DASHBOARD
+                ) {
+                    navController.navigate(Routes.HOME) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 }
             }
         }
     }
 
-    val showBottomBar = isLoggedIn && currentRoute in bottomNavRoutes
+    val showBottomBar = isLoggedIn && currentUser?.esAdmin != true && currentRoute in bottomNavRoutes
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -103,9 +114,9 @@ fun YazumiNavHost(container: AppContainer) {
                         selected = currentRoute == Routes.HOME,
                         onClick = {
                             navController.navigate(Routes.HOME) {
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                // HOME es el primer destino de usuario, pop hasta él y reusar
+                                popUpTo(Routes.HOME) { inclusive = false }
                                 launchSingleTop = true
-                                restoreState = true
                             }
                         },
                         icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
@@ -115,9 +126,8 @@ fun YazumiNavHost(container: AppContainer) {
                         selected = currentRoute == Routes.CATALOG,
                         onClick = {
                             navController.navigate(Routes.CATALOG) {
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                popUpTo(Routes.HOME) { inclusive = false }
                                 launchSingleTop = true
-                                restoreState = true
                             }
                         },
                         icon = { Icon(Icons.Default.Store, contentDescription = "Catálogo") },
@@ -127,9 +137,8 @@ fun YazumiNavHost(container: AppContainer) {
                         selected = currentRoute == Routes.CART,
                         onClick = {
                             navController.navigate(Routes.CART) {
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                popUpTo(Routes.HOME) { inclusive = false }
                                 launchSingleTop = true
-                                restoreState = true
                             }
                         },
                         icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Pedido") },
@@ -139,9 +148,8 @@ fun YazumiNavHost(container: AppContainer) {
                         selected = currentRoute == Routes.ORDERS,
                         onClick = {
                             navController.navigate(Routes.ORDERS) {
-                                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                                popUpTo(Routes.HOME) { inclusive = false }
                                 launchSingleTop = true
-                                restoreState = true
                             }
                         },
                         icon = { Icon(Icons.Default.Receipt, contentDescription = "Mis pedidos") },
@@ -153,13 +161,11 @@ fun YazumiNavHost(container: AppContainer) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = if (isLoggedIn) {
-                if (currentUser?.esAdmin == true) Routes.ADMIN_DASHBOARD else Routes.HOME
-            } else {
-                Routes.LOGIN
-            },
+            // startDestination SIEMPRE fijo en LOGIN — la redirección la hace el LaunchedEffect
+            startDestination = Routes.LOGIN,
             modifier = Modifier.padding(innerPadding),
         ) {
+            // ─── Auth ─────────────────────────────────────────────────────────
             composable(Routes.LOGIN) {
                 LoginScreen(
                     viewModel = authViewModel,
@@ -186,15 +192,15 @@ fun YazumiNavHost(container: AppContainer) {
                     onNavigateBack = { navController.popBackStack() },
                 )
             }
+
+            // ─── Pantallas de usuario (con bottom nav) ────────────────────────
             composable(Routes.HOME) {
                 val homeViewModel: HomeViewModel = viewModel(factory = factory)
                 HomeScreen(
                     viewModel = homeViewModel,
                     onProductClick = { navController.navigate(Routes.product(it)) },
                     onCategoryClick = { navController.navigate(Routes.category(it)) },
-                    onLogout = {
-                        authViewModel.logout()
-                    },
+                    onLogout = { authViewModel.logout() },
                 )
             }
             composable(Routes.CATALOG) {
@@ -208,7 +214,8 @@ fun YazumiNavHost(container: AppContainer) {
                 route = Routes.CATEGORY,
                 arguments = listOf(navArgument("marca") { type = NavType.StringType }),
             ) { backStackEntry ->
-                val marca = backStackEntry.arguments?.getString("marca") ?: return@composable
+                val encodedMarca = backStackEntry.arguments?.getString("marca") ?: return@composable
+                val marca = android.net.Uri.decode(encodedMarca)
                 val categoryViewModel: CategoryProductsViewModel = viewModel(
                     factory = factory.categoryProducts(marca),
                 )
@@ -216,7 +223,13 @@ fun YazumiNavHost(container: AppContainer) {
                     viewModel = categoryViewModel,
                     onProductClick = { navController.navigate(Routes.product(it)) },
                     onBack = { navController.popBackStack() },
-                    onNavigateToCart = { navController.navigate(Routes.CART) }
+                    onNavigateToCart = {
+                        // Navegar al carrito sin acumular en el backstack
+                        navController.navigate(Routes.CART) {
+                            popUpTo(Routes.HOME) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
                 )
             }
             composable(
@@ -231,36 +244,46 @@ fun YazumiNavHost(container: AppContainer) {
                     viewModel = productViewModel,
                     snackbarHostState = snackbarHostState,
                     onBack = { navController.popBackStack() },
-                    onNavigateToCart = { navController.navigate(Routes.CART) }
+                    onNavigateToCart = {
+                        navController.navigate(Routes.CART) {
+                            popUpTo(Routes.HOME) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
                 )
             }
             composable(Routes.CART) {
                 val cartViewModel: CartViewModel = viewModel(factory = factory)
+                // Determinar si hay una pantalla anterior a la que regresar
+                // (distinta de HOME — si prev es HOME no necesita flecha atrás)
+                val prevRoute = navController.previousBackStackEntry?.destination?.route
+                val showBack = prevRoute != null && prevRoute != Routes.HOME
                 CartScreen(
                     viewModel = cartViewModel,
                     onNavigateToCatalog = {
                         navController.navigate(Routes.CATALOG) {
-                            popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+                            popUpTo(Routes.HOME) { inclusive = false }
                             launchSingleTop = true
-                            restoreState = true
                         }
-                    }
+                    },
+                    onBack = if (showBack) {
+                        { navController.popBackStack() }
+                    } else null,
                 )
             }
             composable(Routes.ORDERS) {
                 val ordersViewModel: OrderHistoryViewModel = viewModel(factory = factory)
                 OrdersScreen(viewModel = ordersViewModel)
             }
+
+            // ─── Admin ────────────────────────────────────────────────────────
             composable(Routes.ADMIN_DASHBOARD) {
                 val adminViewModel: AdminViewModel = viewModel(factory = factory)
                 AdminScreen(
                     viewModel = adminViewModel,
-                    onLogout = {
-                        authViewModel.logout()
-                    }
+                    onLogout = { authViewModel.logout() }
                 )
             }
         }
     }
 }
-

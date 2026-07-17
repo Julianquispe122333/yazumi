@@ -16,7 +16,7 @@ class ProductRepository(private val api: YazumiApi) {
                 Result.failure(Exception(response.message ?: "Error al cargar productos"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.parseErrorMessage()))
         }
     }
 
@@ -29,7 +29,7 @@ class ProductRepository(private val api: YazumiApi) {
                 Result.failure(Exception(response.message ?: "Producto no encontrado"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.parseErrorMessage()))
         }
     }
 
@@ -42,7 +42,7 @@ class ProductRepository(private val api: YazumiApi) {
                 Result.failure(Exception(response.message ?: "Error al cargar categorías"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            Result.failure(Exception(e.parseErrorMessage()))
         }
     }
 
@@ -52,7 +52,7 @@ class ProductRepository(private val api: YazumiApi) {
      */
     suspend fun getFavoritos(): Result<List<Producto>> {
         return getProductos().map { productos ->
-            productos.filter { (it.stock ?: 0) > 0 }.take(4)
+            productos.filter { it.stock > 0 }.take(4)
         }
     }
 
@@ -66,6 +66,24 @@ class ProductRepository(private val api: YazumiApi) {
             Promocion(3, "Semana Cheetos", "10% de descuento en toda la línea Cheetos", null, 10, 0xFF003DA5),
         )
         return Result.success(promos)
+    }
+
+    private fun Throwable.parseErrorMessage(): String {
+        if (this is retrofit2.HttpException) {
+            try {
+                val errorBody = this.response()?.errorBody()?.string()
+                if (!errorBody.isNullOrBlank()) {
+                    val apiResponse = com.google.gson.Gson().fromJson(
+                        errorBody,
+                        com.example.yazumi.data.model.ApiResponse::class.java
+                    )
+                    return apiResponse.message ?: "Error del servidor"
+                }
+            } catch (ex: Exception) {
+                // ignorar
+            }
+        }
+        return this.message ?: "Error de red"
     }
 }
 

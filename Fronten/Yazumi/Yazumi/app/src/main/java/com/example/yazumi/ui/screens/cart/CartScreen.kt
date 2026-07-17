@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.RemoveShoppingCart
 import androidx.compose.material3.Icon
@@ -46,6 +47,7 @@ import com.example.yazumi.ui.viewmodel.CartViewModel
 fun CartScreen(
     viewModel: CartViewModel,
     onNavigateToCatalog: () -> Unit,
+    onBack: (() -> Unit)? = null,
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val user by viewModel.currentUser.collectAsState()
@@ -57,7 +59,6 @@ fun CartScreen(
             total = uiState.confirmedCompra?.total ?: 0.0,
             onDone = {
                 viewModel.resetConfirmation()
-                onNavigateToCatalog()
             },
         )
         uiState.error != null && uiState.carrito.items.isEmpty() -> {
@@ -75,92 +76,120 @@ fun CartScreen(
         }
         else -> {
             val carrito = uiState.carrito
-            if (carrito.items.isEmpty()) {
-                Column(
+            Column(modifier = Modifier.fillMaxSize()) {
+                Row(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.RemoveShoppingCart,
-                        contentDescription = "Pedido vacío",
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
-                        modifier = Modifier.height(100.dp).width(100.dp)
-                    )
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Text(
-                        text = "Tu pedido está vacío",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Agrega deliciosos snacks desde el catálogo para comenzar tu compra.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                    )
-                }
-            } else {
-                Column(modifier = Modifier.fillMaxSize()) {
-                    LazyColumn(
-                        modifier = Modifier.weight(1f),
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                    ) {
-                        items(carrito.items, key = { it.idProducto }) { item ->
-                            CartItemRow(
-                                item = item,
-                                onQuantityChange = { viewModel.updateQuantity(item.idProducto, it) },
-                                onRemoveClick = { viewModel.removeItem(item.idProducto) },
+                    if (onBack != null) {
+                        IconButton(onClick = onBack) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Volver",
+                                tint = MaterialTheme.colorScheme.primary
                             )
                         }
                     }
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                    Text(
+                        text = "Mi Pedido",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 8.dp),
+                    )
+                }
+
+                if (carrito.items.isEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .weight(1f)
+                            .padding(32.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
                     ) {
-                        Column(modifier = Modifier.padding(20.dp)) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                            ) {
-                                Text("Total", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                                Text(
-                                    formatSoles(carrito.total),
-                                    style = MaterialTheme.typography.titleLarge,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
+                        Icon(
+                            imageVector = Icons.Default.RemoveShoppingCart,
+                            contentDescription = "Pedido vacío",
+                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+                            modifier = Modifier.height(100.dp).width(100.dp)
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                        Text(
+                            text = "Tu pedido está vacío",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "Agrega deliciosos snacks desde el catálogo para comenzar tu compra.",
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+                    }
+                } else {
+                    Column(modifier = Modifier.fillMaxSize().weight(1f)) {
+                        LazyColumn(
+                            modifier = Modifier.weight(1f),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            items(carrito.items, key = { it.idProducto }) { item ->
+                                CartItemRow(
+                                    item = item,
+                                    onQuantityChange = { viewModel.updateQuantity(item.idProducto, it) },
+                                    onRemoveClick = { viewModel.removeItem(item.idProducto) },
                                 )
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            OutlinedTextField(
-                                value = user?.direccion ?: "",
-                                onValueChange = {},
-                                label = { Text("Dirección de entrega") },
-                                modifier = Modifier.fillMaxWidth(),
-                                readOnly = true,
-                            )
-                            uiState.error?.let {
-                                Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
-                            }
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Button(
-                                onClick = {
-                                    viewModel.confirmOrder(user?.direccion ?: "")
-                                },
-                                modifier = Modifier.fillMaxWidth().height(52.dp),
-                                enabled = !uiState.isConfirming,
-                                shape = RoundedCornerShape(12.dp),
-                            ) {
-                                Text(
-                                    if (uiState.isConfirming) "Confirmando..." else "Confirmar pedido",
-                                    style = MaterialTheme.typography.titleMedium,
+                        }
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                        ) {
+                            Column(modifier = Modifier.padding(20.dp)) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                ) {
+                                    Text("Total", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                                    Text(
+                                        formatSoles(carrito.total),
+                                        style = MaterialTheme.typography.titleLarge,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary,
+                                    )
+                                }
+                                Spacer(modifier = Modifier.height(8.dp))
+                                OutlinedTextField(
+                                    value = user?.direccion ?: "",
+                                    onValueChange = {},
+                                    label = { Text("Dirección de entrega") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    readOnly = true,
                                 )
+                                uiState.error?.let {
+                                    Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp))
+                                }
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Button(
+                                    onClick = {
+                                        viewModel.confirmOrder(user?.direccion ?: "")
+                                    },
+                                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                                    enabled = !uiState.isConfirming,
+                                    shape = RoundedCornerShape(12.dp),
+                                ) {
+                                    Text(
+                                        if (uiState.isConfirming) "Confirmando..." else "Confirmar pedido",
+                                        style = MaterialTheme.typography.titleMedium,
+                                    )
+                                }
                             }
                         }
                     }
