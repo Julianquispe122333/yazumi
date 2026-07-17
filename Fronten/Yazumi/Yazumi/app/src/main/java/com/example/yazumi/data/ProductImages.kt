@@ -19,17 +19,14 @@ object ProductImages {
     private const val CHEESE_BALLS =
         "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Cheese_puffs.jpg/320px-Cheese_puffs.jpg"
 
-    fun forProduct(idProducto: Int, marca: String): String = when (idProducto) {
-        1, 3, 4 -> LAYS
-        2 -> LAYS_LIMON
-        5 -> DORITOS
-        6, 7 -> DORITOS_FLAMIN
-        8, 10 -> CHEETOS
-        9 -> CHEETOS_PUFFS
-        11, 12 -> PEANUTS
-        13, 14 -> CHEESE_BALLS
-        else -> forBrand(marca)
-    }
+    private const val RUFFLES =
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/0/09/Ruffles_potato_chips_bag.jpg/320px-Ruffles_potato_chips_bag.jpg"
+    private const val NATUCHIPS =
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Plantain_chips_plate.jpg/320px-Plantain_chips_plate.jpg"
+    private const val TORTEES =
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/Tortilla_chips_with_chili.jpg/320px-Tortilla_chips_with_chili.jpg"
+
+    fun forProduct(idProducto: Int, marca: String): String = forBrand(marca)
 
     fun forBrand(marca: String): String = when (marca.lowercase()) {
         "lays" -> LAYS
@@ -37,6 +34,11 @@ object ProductImages {
         "cheetos" -> CHEETOS
         "cuates" -> PEANUTS
         "cheese tris" -> CHEESE_BALLS
+        "ruffles" -> RUFFLES
+        "karinto" -> PEANUTS
+        "natuchips" -> NATUCHIPS
+        "tortees" -> TORTEES
         else -> LAYS
     }
 }
+

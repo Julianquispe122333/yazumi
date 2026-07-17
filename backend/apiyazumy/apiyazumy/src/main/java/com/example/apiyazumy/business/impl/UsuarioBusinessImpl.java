@@ -43,6 +43,7 @@ public class UsuarioBusinessImpl implements UsuarioBusiness {
                 .estado(true)
                 .fechaRegistro(LocalDateTime.now())
                 .codigoValidacion(cod)
+                .esAdmin(false)
                 .build();
 
         nuevoUsuario = usuarioRepository.save(nuevoUsuario);

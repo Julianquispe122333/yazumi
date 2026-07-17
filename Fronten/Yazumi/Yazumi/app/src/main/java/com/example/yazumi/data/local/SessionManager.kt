@@ -27,6 +27,7 @@ class SessionManager(private val context: Context) {
             telefono = prefs[KEY_TELEFONO] ?: "",
             direccion = prefs[KEY_DIRECCION] ?: "",
             nombreNegocio = prefs[KEY_NEGOCIO],
+            esAdmin = prefs[KEY_ES_ADMIN] ?: false,
         )
     }
 
@@ -37,6 +38,7 @@ class SessionManager(private val context: Context) {
             prefs[KEY_TELEFONO] = usuario.telefono
             prefs[KEY_DIRECCION] = usuario.direccion
             usuario.nombreNegocio?.let { prefs[KEY_NEGOCIO] = it }
+            prefs[KEY_ES_ADMIN] = usuario.esAdmin
         }
     }
 
@@ -50,5 +52,6 @@ class SessionManager(private val context: Context) {
         private val KEY_TELEFONO = stringPreferencesKey("telefono")
         private val KEY_DIRECCION = stringPreferencesKey("direccion")
         private val KEY_NEGOCIO = stringPreferencesKey("nombre_negocio")
+        private val KEY_ES_ADMIN = androidx.datastore.preferences.core.booleanPreferencesKey("es_admin")
     }
 }

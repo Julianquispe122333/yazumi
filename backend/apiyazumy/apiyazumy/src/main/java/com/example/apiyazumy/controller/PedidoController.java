@@ -38,4 +38,18 @@ public class PedidoController {
         List<EstadoPedidoResponseDTO> estados = pedidoBusiness.listarEstados();
         return ResponseEntity.ok(ApiResponse.success("Estados obtenidos exitosamente", estados));
     }
+
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<PedidoResponseDTO>>> obtenerTodosLosPedidos() {
+        List<PedidoResponseDTO> pedidos = pedidoBusiness.obtenerTodosLosPedidos();
+        return ResponseEntity.ok(ApiResponse.success("Todos los pedidos obtenidos exitosamente", pedidos));
+    }
+
+    @PutMapping("/{idPedido}/estado/{idEstado}")
+    public ResponseEntity<ApiResponse<PedidoResponseDTO>> actualizarEstadoPedido(
+            @PathVariable Integer idPedido,
+            @PathVariable Integer idEstado) {
+        PedidoResponseDTO pedido = pedidoBusiness.actualizarEstadoPedido(idPedido, idEstado);
+        return ResponseEntity.ok(ApiResponse.success("Estado del pedido actualizado exitosamente", pedido));
+    }
 }

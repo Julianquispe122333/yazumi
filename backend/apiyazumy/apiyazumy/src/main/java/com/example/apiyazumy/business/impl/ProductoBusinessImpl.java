@@ -35,7 +35,7 @@ public class ProductoBusinessImpl implements ProductoBusiness {
                 .imagen(p.getImagen())
                 .activo(p.getActivo())
                 .unidadesPorPaquete(p.getUnidadesPorPaquete() != null && p.getUnidadesPorPaquete() > 0 ? p.getUnidadesPorPaquete() : 12)
-                .precioSugerido(p.getPrecioSugerido() != null ? p.getPrecioSugerido() : java.math.BigDecimal.valueOf(1.50))
+                .precioSugerido(p.getPrecioSugerido() != null && p.getPrecioSugerido().compareTo(java.math.BigDecimal.ZERO) > 0 ? p.getPrecioSugerido() : java.math.BigDecimal.valueOf(1.50))
                 .build();
     }
 
@@ -81,7 +81,7 @@ public class ProductoBusinessImpl implements ProductoBusiness {
         return porMarca.entrySet().stream()
                 .map(e -> CategoriaResponseDTO.builder()
                         .nombre(e.getKey())
-                        .imagen(null)
+                        .imagen(e.getValue().isEmpty() ? null : e.getValue().get(0).getImagen())
                         .cantidadProductos(e.getValue().size())
                         .build())
                 .sorted((a, b) -> a.getNombre().compareToIgnoreCase(b.getNombre()))

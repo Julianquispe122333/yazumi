@@ -32,6 +32,9 @@ import com.example.yazumi.ui.components.LoadingBox
 import com.example.yazumi.ui.components.ProductCard
 import com.example.yazumi.ui.viewmodel.CatalogViewModel
 
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.Button
+
 @Composable
 fun CatalogScreen(
     viewModel: CatalogViewModel,
@@ -39,9 +42,25 @@ fun CatalogScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(Unit) {
+        viewModel.loadCategorias()
+    }
+
     when {
         uiState.isLoading -> LoadingBox()
-        uiState.error != null -> ErrorMessage(uiState.error!!)
+        uiState.error != null -> {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                ErrorMessage(uiState.error ?: "Error al cargar el catálogo")
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = { viewModel.loadCategorias() }) {
+                    Text("Reintentar")
+                }
+            }
+        }
         else -> Column(modifier = Modifier.fillMaxSize()) {
             Text(
                 text = "Categorías de productos",

@@ -36,6 +36,8 @@ import com.example.yazumi.ui.screens.catalog.CategoryProductsScreen
 import com.example.yazumi.ui.screens.home.HomeScreen
 import com.example.yazumi.ui.screens.orders.OrdersScreen
 import com.example.yazumi.ui.screens.product.ProductDetailScreen
+import com.example.yazumi.ui.screens.admin.AdminScreen
+import com.example.yazumi.ui.viewmodel.AdminViewModel
 import com.example.yazumi.ui.viewmodel.AuthViewModel
 import com.example.yazumi.ui.viewmodel.CartViewModel
 import com.example.yazumi.ui.viewmodel.CatalogViewModel
@@ -61,17 +63,35 @@ fun YazumiNavHost(container: AppContainer) {
     }
     val authViewModel: AuthViewModel = viewModel(factory = factory)
     val isLoggedIn by authViewModel.isLoggedIn.collectAsState(initial = false)
+    val currentUser by authViewModel.currentUser.collectAsState(initial = null)
 
-    LaunchedEffect(isLoggedIn) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
+    LaunchedEffect(isLoggedIn, currentUser) {
         if (!isLoggedIn) {
             navController.navigate(Routes.LOGIN) {
                 popUpTo(0) { inclusive = true }
             }
+        } else {
+            currentUser?.let { user ->
+                if (user.esAdmin) {
+                    if (currentRoute != Routes.ADMIN_DASHBOARD) {
+                        navController.navigate(Routes.ADMIN_DASHBOARD) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                } else {
+                    if (currentRoute == Routes.LOGIN || currentRoute == Routes.ADMIN_DASHBOARD) {
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    }
+                }
+            }
         }
     }
 
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
     val showBottomBar = isLoggedIn && currentRoute in bottomNavRoutes
 
     Scaffold(
@@ -133,14 +153,20 @@ fun YazumiNavHost(container: AppContainer) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = if (isLoggedIn) Routes.HOME else Routes.LOGIN,
+            startDestination = if (isLoggedIn) {
+                if (currentUser?.esAdmin == true) Routes.ADMIN_DASHBOARD else Routes.HOME
+            } else {
+                Routes.LOGIN
+            },
             modifier = Modifier.padding(innerPadding),
         ) {
             composable(Routes.LOGIN) {
                 LoginScreen(
                     viewModel = authViewModel,
                     onLoginSuccess = {
-                        navController.navigate(Routes.HOME) {
+                        val user = authViewModel.currentUser.value
+                        val destination = if (user?.esAdmin == true) Routes.ADMIN_DASHBOARD else Routes.HOME
+                        navController.navigate(destination) {
                             popUpTo(Routes.LOGIN) { inclusive = true }
                         }
                     },
@@ -151,7 +177,9 @@ fun YazumiNavHost(container: AppContainer) {
                 RegisterScreen(
                     viewModel = authViewModel,
                     onRegisterSuccess = {
-                        navController.navigate(Routes.HOME) {
+                        val user = authViewModel.currentUser.value
+                        val destination = if (user?.esAdmin == true) Routes.ADMIN_DASHBOARD else Routes.HOME
+                        navController.navigate(destination) {
                             popUpTo(Routes.LOGIN) { inclusive = true }
                         }
                     },
@@ -222,6 +250,15 @@ fun YazumiNavHost(container: AppContainer) {
             composable(Routes.ORDERS) {
                 val ordersViewModel: OrderHistoryViewModel = viewModel(factory = factory)
                 OrdersScreen(viewModel = ordersViewModel)
+            }
+            composable(Routes.ADMIN_DASHBOARD) {
+                val adminViewModel: AdminViewModel = viewModel(factory = factory)
+                AdminScreen(
+                    viewModel = adminViewModel,
+                    onLogout = {
+                        authViewModel.logout()
+                    }
+                )
             }
         }
     }

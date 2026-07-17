@@ -9,6 +9,7 @@ object Routes {
     const val PRODUCT = "product/{id}"
     const val CART = "cart"
     const val ORDERS = "orders"
+    const val ADMIN_DASHBOARD = "admin_dashboard"
 
     fun category(marca: String) = "category/$marca"
     fun product(id: Int) = "product/$id"

@@ -8,6 +8,7 @@ data class Usuario(
     val direccion: String,
     val nombreNegocio: String?,
     val estado: Int = 1,
+    val esAdmin: Boolean = false,
 )
 
 // ─── Producto ─────────────────────────────────────────────────────────────────

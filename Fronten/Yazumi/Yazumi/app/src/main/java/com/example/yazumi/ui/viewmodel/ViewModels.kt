@@ -25,6 +25,12 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
         false,
     )
 
+    val currentUser = authRepository.currentUser.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        null,
+    )
+
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
@@ -282,6 +288,14 @@ class CartViewModel(
         }
     }
 
+    fun removeItem(productoId: Int) {
+        viewModelScope.launch {
+            cartRepository.eliminarItem(productoId)
+                .onSuccess { _uiState.value = _uiState.value.copy(carrito = it) }
+                .onFailure { _uiState.value = _uiState.value.copy(error = it.message) }
+        }
+    }
+
     fun confirmOrder(direccion: String) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isConfirming = true, error = null)
@@ -342,6 +356,58 @@ data class OrderHistoryUiState(
     val pedidos: List<com.example.yazumi.data.model.Pedido> = emptyList(),
 )
 
+// ─── AdminViewModel ───────────────────────────────────────────────────────────
+
+class AdminViewModel(private val orderRepository: OrderRepository) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(AdminUiState(isLoading = true))
+    val uiState: StateFlow<AdminUiState> = _uiState.asStateFlow()
+
+    init {
+        loadPedidos()
+    }
+
+    fun loadPedidos() {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            orderRepository.getTodosLosPedidos()
+                .onSuccess { pedidos ->
+                    _uiState.value = AdminUiState(
+                        isLoading = false,
+                        pedidosTotales = pedidos,
+                        pedidosActivos = pedidos.filter { 
+                            it.estado == "Registrado" || it.estado == "En preparación" || it.estado == "En camino"
+                        }
+                    )
+                }
+                .onFailure {
+                    _uiState.value = AdminUiState(isLoading = false, error = it.message)
+                }
+        }
+    }
+
+    fun cambiarEstado(idPedido: Int, idEstado: Int) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isUpdating = true)
+            orderRepository.actualizarEstadoPedido(idPedido, idEstado)
+                .onSuccess {
+                    loadPedidos()
+                }
+                .onFailure {
+                    _uiState.value = _uiState.value.copy(isUpdating = false, error = it.message)
+                }
+        }
+    }
+}
+
+data class AdminUiState(
+    val isLoading: Boolean = false,
+    val isUpdating: Boolean = false,
+    val error: String? = null,
+    val pedidosTotales: List<com.example.yazumi.data.model.Pedido> = emptyList(),
+    val pedidosActivos: List<com.example.yazumi.data.model.Pedido> = emptyList(),
+)
+
 // ─── ViewModelFactory ─────────────────────────────────────────────────────────
 
 class ViewModelFactory(
@@ -364,6 +430,8 @@ class ViewModelFactory(
                 CartViewModel(cartRepository, orderRepository, authRepository) as T
             modelClass.isAssignableFrom(OrderHistoryViewModel::class.java) ->
                 OrderHistoryViewModel(orderRepository) as T
+            modelClass.isAssignableFrom(AdminViewModel::class.java) ->
+                AdminViewModel(orderRepository) as T
             else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
         }
     }

@@ -14,8 +14,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.RemoveShoppingCart
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -113,6 +115,7 @@ fun CartScreen(
                             CartItemRow(
                                 item = item,
                                 onQuantityChange = { viewModel.updateQuantity(item.idProducto, it) },
+                                onRemoveClick = { viewModel.removeItem(item.idProducto) },
                             )
                         }
                     }
@@ -168,7 +171,11 @@ fun CartScreen(
 }
 
 @Composable
-private fun CartItemRow(item: CarritoItem, onQuantityChange: (Int) -> Unit) {
+private fun CartItemRow(
+    item: CarritoItem,
+    onQuantityChange: (Int) -> Unit,
+    onRemoveClick: () -> Unit,
+) {
     Card(
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
@@ -198,10 +205,25 @@ private fun CartItemRow(item: CarritoItem, onQuantityChange: (Int) -> Unit) {
                     color = MaterialTheme.colorScheme.primary,
                 )
             }
-            QuantitySelector(
-                quantity = item.cantidad,
-                onQuantityChange = { onQuantityChange(it) },
-            )
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                IconButton(
+                    onClick = onRemoveClick,
+                    modifier = Modifier.padding(start = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Eliminar",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+                QuantitySelector(
+                    quantity = item.cantidad,
+                    onQuantityChange = { onQuantityChange(it) },
+                )
+            }
         }
     }
 }

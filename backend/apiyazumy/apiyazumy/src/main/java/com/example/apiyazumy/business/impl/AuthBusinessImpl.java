@@ -35,6 +35,7 @@ public class AuthBusinessImpl implements AuthBusiness {
                 .telefono(usuario.getTelefono())
                 .direccion(usuario.getDireccion())
                 .nombreNegocio(usuario.getNombreNegocio())
+                .esAdmin(usuario.getEsAdmin() != null ? usuario.getEsAdmin() : false)
                 .build();
     }
 }

@@ -15,4 +15,5 @@ public class LoginResponseDTO {
     private String telefono;
     private String direccion;
     private String nombreNegocio;
+    private Boolean esAdmin;
 }

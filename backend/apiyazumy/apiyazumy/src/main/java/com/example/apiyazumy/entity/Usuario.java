@@ -36,6 +36,9 @@ public class Usuario {
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;
 
+    @Column(name = "es_admin")
+    private Boolean esAdmin;
+
     @ManyToOne
     @JoinColumn(name = "id_codigo")
     private CodigoValidacion codigoValidacion;

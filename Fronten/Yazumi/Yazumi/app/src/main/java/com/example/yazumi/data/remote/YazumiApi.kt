@@ -91,5 +91,16 @@ interface YazumiApi {
     /** GET /api/pedidos/{idPedido} */
     @GET("pedidos/{idPedido}")
     suspend fun getPedido(@Path("idPedido") idPedido: Int): ApiResponse<Pedido>
+
+    /** GET /api/pedidos (Administrador - todos los pedidos) */
+    @GET("pedidos")
+    suspend fun getTodosLosPedidos(): ApiResponse<List<Pedido>>
+
+    /** PUT /api/pedidos/{idPedido}/estado/{idEstado} (Administrador - cambiar estado) */
+    @PUT("pedidos/{idPedido}/estado/{idEstado}")
+    suspend fun actualizarEstadoPedido(
+        @Path("idPedido") idPedido: Int,
+        @Path("idEstado") idEstado: Int
+    ): ApiResponse<Pedido>
 }
 

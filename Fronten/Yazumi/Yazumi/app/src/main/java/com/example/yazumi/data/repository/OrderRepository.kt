@@ -45,6 +45,34 @@ class OrderRepository(
         }
     }
 
+    /** Obtiene todos los pedidos del sistema (solo administrador) */
+    suspend fun getTodosLosPedidos(): Result<List<Pedido>> {
+        return try {
+            val response = api.getTodosLosPedidos()
+            if (response.success && response.data != null) {
+                Result.success(response.data)
+            } else {
+                Result.failure(Exception(response.message ?: "Error al obtener todos los pedidos"))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception(e.parseErrorMessage()))
+        }
+    }
+
+    /** Actualiza el estado de un pedido específico (solo administrador) */
+    suspend fun actualizarEstadoPedido(idPedido: Int, idEstado: Int): Result<Pedido> {
+        return try {
+            val response = api.actualizarEstadoPedido(idPedido, idEstado)
+            if (response.success && response.data != null) {
+                Result.success(response.data)
+            } else {
+                Result.failure(Exception(response.message ?: "Error al actualizar estado del pedido"))
+            }
+        } catch (e: Exception) {
+            Result.failure(Exception(e.parseErrorMessage()))
+        }
+    }
+
     private fun Throwable.parseErrorMessage(): String {
         if (this is retrofit2.HttpException) {
             try {

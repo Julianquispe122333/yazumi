@@ -4,6 +4,7 @@ import com.example.apiyazumy.business.PedidoBusiness;
 import com.example.apiyazumy.dto.response.EstadoPedidoResponseDTO;
 import com.example.apiyazumy.dto.response.PedidoResponseDTO;
 import com.example.apiyazumy.entity.DetallePedido;
+import com.example.apiyazumy.entity.EstadoPedido;
 import com.example.apiyazumy.entity.Pedido;
 import com.example.apiyazumy.entity.Usuario;
 import com.example.apiyazumy.exception.UsuarioNoEncontradoException;
@@ -57,6 +58,29 @@ public class PedidoBusinessImpl implements PedidoBusiness {
                         .nombre(e.getNombre())
                         .build())
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PedidoResponseDTO> obtenerTodosLosPedidos() {
+        List<Pedido> pedidos = pedidoRepository.findAllByOrderByFechaPedidoDesc();
+        return pedidos.stream()
+                .map(pedido -> mapearPedidoADTO(pedido, pedido.getUsuario().getIdUsuario()))
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public PedidoResponseDTO actualizarEstadoPedido(Integer idPedido, Integer idEstado) {
+        Pedido pedido = pedidoRepository.findById(idPedido)
+                .orElseThrow(() -> new RuntimeException("PEDIDO_NO_ENCONTRADO"));
+        EstadoPedido estado = estadoPedidoRepository.findById(idEstado)
+                .orElseThrow(() -> new RuntimeException("ESTADO_NO_ENCONTRADO"));
+
+        pedido.setEstadoPedido(estado);
+        pedido = pedidoRepository.save(pedido);
+
+        return mapearPedidoADTO(pedido, pedido.getUsuario().getIdUsuario());
     }
 
     // ---- Helper privado ----

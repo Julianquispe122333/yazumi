@@ -25,4 +25,18 @@ public interface PedidoBusiness {
      * @return Lista de estados (id + nombre)
      */
     List<EstadoPedidoResponseDTO> listarEstados();
+
+    /**
+     * Obtiene la lista de todos los pedidos registrados en el sistema.
+     * @return Lista de todos los pedidos
+     */
+    List<PedidoResponseDTO> obtenerTodosLosPedidos();
+
+    /**
+     * Actualiza el estado de un pedido específico.
+     * @param idPedido Identificador del pedido
+     * @param idEstado Identificador del nuevo estado
+     * @return DTO con la información actualizada del pedido
+     */
+    PedidoResponseDTO actualizarEstadoPedido(Integer idPedido, Integer idEstado);
 }
