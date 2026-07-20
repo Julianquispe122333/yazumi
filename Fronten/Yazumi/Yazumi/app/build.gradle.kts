@@ -15,7 +15,7 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        buildConfigField("String", "API_BASE_URL", "\"http://192.168.1.87:8080/api/\"")
+        buildConfigField("String", "API_BASE_URL", "\"https://yazumi-production.up.railway.app/api/\"")
         buildConfigField("boolean", "USE_MOCK_API", "false")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
